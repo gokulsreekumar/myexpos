@@ -22,7 +22,6 @@ loadi(3, 16);
 loadi(4, 17);
 loadi(5, 18);
 
-
 // PAGE TABLE
 
 PTBR = PAGE_TABLE_BASE;
