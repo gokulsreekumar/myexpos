@@ -1,5 +1,4 @@
 breakpoint;
-
 // Change Stacks
 
 // save the SP to UPTR
@@ -53,7 +52,6 @@ if([new_process_table + 4] == CREATED) then
 endif;
 
 [new_process_table + 4] = RUNNING;
-
 
 // Restore & change stack back to User
 restore;

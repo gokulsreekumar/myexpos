@@ -1,14 +1,16 @@
-// Load in
+// ----- Load in ------
 
-// Timer
+// ----- Timer -------
 loadi(4, 17);
 loadi(5, 18);
 
-// Library
+// ----- Library ------
 loadi(63,13);
 loadi(64,14);
 
-// INT7
+// ----- Interrupts and Exeptions -------
+
+// ----- INT7 -------
 loadi(16,29);
 loadi(17,30);
 
@@ -21,12 +23,16 @@ loadi(2, 15);
 loadi(3, 16);
 
 
+// ----- Programs ------
+
 // INIT PROG
 loadi(65, 7);
 loadi(66, 8);
 
 
-// Page Table INIT
+// ------ Page Tables ------
+
+// ----- Page Table INIT -------
 
 // PID = 1
 PTBR = PAGE_TABLE_BASE + 20;
@@ -62,7 +68,9 @@ PTLR = 10;
 [PTBR+19] = "0110";
 
 
-// Process Table INIT
+// ------ Process Tables ----------
+
+// ------ Process Table INIT -------
 
     // PID
     [PROCESS_TABLE + 16 + 1] = 1;
@@ -79,7 +87,9 @@ PTLR = 10;
     // PTLR_field
     [PROCESS_TABLE + 16 + 15] = 10;
 
-// ENRTY POINT INIT
+
+// ----- Entry Points ------- 
+// ----- ENRTY POINT INIT -------
 [76*512] = [65 * 512 + 1];
 
 return;
