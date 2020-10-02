@@ -12,6 +12,10 @@ loadi(64,14);
 loadi(65, 7);
 loadi(66, 8);
 
+// INT7
+loadi(16,29);
+loadi(17,30);
+
 // INT10
 loadi(22,35);
 loadi(23,36);
@@ -19,6 +23,22 @@ loadi(23,36);
 // Exception Handler
 loadi(2, 15);
 loadi(3, 16);
+
+
+// Process Table (KTPR is not Set and User Stack Page is stored when change stack)
+
+// UArea Page
+[PROCESS_TABLE + 11] = 80;
+
+// PID
+[PROCESS_TABLE + 1] = 0;
+
+
+
+// System Status Table
+
+// PID 
+[SYSTEM_STATUS_TABLE + 1] = 0;
 
 // Page Table
 

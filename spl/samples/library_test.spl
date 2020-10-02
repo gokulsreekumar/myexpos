@@ -1,0 +1,19 @@
+alias fun_code R7;
+alias stack_pntr R1;
+alias syscall R2;
+alias arg1 R3;
+alias arg2 R4;
+alias arg3 R5;
+
+fun_code = [SP - 6];
+syscall = [SP-5];
+arg1 = [SP-4]
+arg2 = [SP-5]
+
+if(fun_code == "Write") then
+    value = 
+    multipush(R2, );
+
+else
+
+endif;
