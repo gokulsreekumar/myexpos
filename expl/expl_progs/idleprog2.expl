@@ -6,7 +6,7 @@ int main()
     enddecl
     begin
         num = 101;
-        while(num!=0) do
+        while(num <= 200) do
             tmp = exposcall("Write", -2, num);
             num = num + 1;
         endwhile;
