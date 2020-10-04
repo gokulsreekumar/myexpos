@@ -60,7 +60,6 @@ PTLR = 10;
 
 // user area page
     [PROCESS_TABLE + 11] = 80;
-
 // PID
     [PROCESS_TABLE + 1] = 0;
 
