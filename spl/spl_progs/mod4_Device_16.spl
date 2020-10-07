@@ -1,0 +1,84 @@
+alias functionNum R1;
+alias currentPID R2;
+
+// ---- Terminal Write Function (num = 3) ----
+
+if(functionNum == 3) then
+// Acquire Terminal First
+    // Push regs used in this module
+    multipush(R1, R2, R3);
+
+    // Store args for Acquire Terminal in Module 0
+    R1 = 8;
+    R2 = currentPID;
+
+    // Call Module 0, Resource Manager
+    call MOD_0;
+
+    // ignore Return value in R0
+    // Pop back Context of this module
+    multipop(R1, R2, R3);
+
+    // Print the word in R3
+    print(R3);
+
+// Release Terminal Now
+    // Push Regs till Now
+    multipush(R1, R2, R3);
+
+    // Store args for Release Terminal
+    R1 = 9;
+	R2 = currentPID;
+
+    // Call Resource Manager 
+	call MOD_0;
+
+    // save the R0 if needed, here not needed
+	multipop(R1, R2, R3);
+	return;
+endif;
+
+// ---- Terminal Read Function (num = 4) ----
+
+if(functionNum == 4) then
+//
+    // Push regs used in this module
+    multipush(R1, R2, R3);
+
+    // Store args for Acquire Terminal in Module 0
+    R1 = 8;
+    R2 = currentPID;
+
+    // Call Module 0, Resource Manager
+    print("callingMod0");
+    call MOD_0;
+
+    // save the R0 if needed, here not needed
+	multipop(R1, R2, R3);
+
+    // Read statement, for requesting to Read from the terminal
+    read;
+
+    // set STATE to waiting for terminal to Read.
+    [PROCESS_TABLE + currentPID * 16 + 4] = WAIT_TERMINAL;
+
+    // MOD_5 for Context Switch (Scheduler)
+    multipush(R1, R2, R3);
+
+    print("CallingMod5");
+
+    call MOD_5;
+
+    multipop(R1, R2, R3);
+
+    print("DoneMod5");
+
+    // R3 has Logical address of the storage buffer, 
+    //offset 8 of Process Table has Input Buffer Field
+    alias physicalAddBuffer R4;
+	physicalAddBuffer = [PTBR + ( 2 * R3 ) / 512] * 512 + R3 % 512;
+	[physicalAddBuffer] = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1] * 16 + 8];
+
+    return;
+
+endif;

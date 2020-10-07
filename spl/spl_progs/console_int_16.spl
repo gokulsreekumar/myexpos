@@ -1,0 +1,38 @@
+// Switch Stack
+
+// save the SP to UPTR, Setting SP to UArea Page - 1
+
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
+
+backup;
+
+alias reqPID R1;
+reqPID = [TERMINAL_STATUS_TABLE + 1];
+
+//get process table
+alias process_table_entry R2;
+process_table_entry = PROCESS_TABLE + reqPID * 16;
+
+// P0 will have the input taken in from console, copy it to Input Buffer Field
+[ process_table_entry + 8 ] = P0;
+
+
+// Release Terminal Now
+
+// Push Regs till Now
+multipush(R1, R2);
+
+// Store args for Release Terminal
+R1 = 9;
+R2 = reqPID;
+
+// Call Resource Manager 
+call MOD_0;
+
+multipop(R1, R2);
+
+restore;
+SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+
+ireturn;
