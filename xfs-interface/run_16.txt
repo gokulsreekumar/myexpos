@@ -1,4 +1,4 @@
-load --init $HOME/myexpos/expl/expl_progs14/gcd_numbers.xsm
+load --init $HOME/myexpos/expl/expl_progs14/bubble_sort.xsm
 load --os $HOME/myexpos/spl/spl_progs/os_startup_14.xsm
 load --module 7 $HOME/myexpos/spl/spl_progs/mod7_Boot_16.xsm
 load --module 5 $HOME/myexpos/spl/spl_progs/mod5_Scheduler.xsm

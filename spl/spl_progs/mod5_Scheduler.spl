@@ -11,27 +11,18 @@ process_table_entry = PROCESS_TABLE + currentPID * 16;
 [process_table_entry + 14] = PTBR;
 [process_table_entry + 15] = PTLR;
 
-
-// find newPID
+// find newPID (Round Robin)
 alias newPID R2;
 newPID = currentPID + 1;
-
-if(newPID == 16) then
-    newPID = 1;
-endif;
-while (newPID != currentPID) do
-    process_table_entry = PROCESS_TABLE + newPID * 16;
-    if( [process_table_entry + 4] == READY || [process_table_entry + 4] == CREATED ) then
-        break;
-    endif;
-    newPID = newPID + 1;
-    if(newPID == 16) then
-        newPID = 1;
-    endif;  
+alias count R3;
+count = 1;
+while((count <= 16) && ([PROCESS_TABLE + (newPID*16) + 4] != READY) && ([PROCESS_TABLE + (newPID*16) + 4] != CREATED)) do
+	newPID = ((newPID + 1)%16);
+	count = count + 1;
 endwhile;
 
-if(newPID == currentPID) then
-    newPID = 0;
+if(count == 17) then
+	newPID = 0;
 endif;
 
 alias new_process_table R3;
@@ -52,5 +43,4 @@ endif;
 
 [new_process_table + 4] = RUNNING;
 multipop(BP);
-
 return;

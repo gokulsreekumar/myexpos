@@ -1,8 +1,6 @@
 // MODE FLAG = 7
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 7;
 
-print("Im at int16");
-
 alias userSP R0;
 userSP = SP;
 
@@ -29,9 +27,8 @@ else
 	 R1 = 4;
 	 R2 = [SYSTEM_STATUS_TABLE + 1];
 	 R3 = word;
-	 call MOD_4;
 
-    print("Called Mod_4");
+	 call MOD_4;
 
 	 multipop(R0, R1, R2, R3);
 	 
@@ -44,3 +41,4 @@ endif;
 
 SP = userSP;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+ireturn;

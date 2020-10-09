@@ -7,32 +7,24 @@ if(functionNum == 3) then
 // Acquire Terminal First
     // Push regs used in this module
     multipush(R1, R2, R3);
-
     // Store args for Acquire Terminal in Module 0
     R1 = 8;
     R2 = currentPID;
-
     // Call Module 0, Resource Manager
     call MOD_0;
-
     // ignore Return value in R0
     // Pop back Context of this module
     multipop(R1, R2, R3);
-
     // Print the word in R3
     print(R3);
-
 // Release Terminal Now
     // Push Regs till Now
     multipush(R1, R2, R3);
-
     // Store args for Release Terminal
     R1 = 9;
 	R2 = currentPID;
-
     // Call Resource Manager 
 	call MOD_0;
-
     // save the R0 if needed, here not needed
 	multipop(R1, R2, R3);
 	return;
