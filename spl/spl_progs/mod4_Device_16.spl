@@ -2,55 +2,42 @@ alias functionNum R1;
 alias currentPID R2;
 
 // ---- Terminal Write Function (num = 3) ----
-
 if(functionNum == 3) then
 // Acquire Terminal First
-    // Push regs used in this module
     multipush(R1, R2, R3);
-
-    // Store args for Acquire Terminal in Module 0
     R1 = 8;
     R2 = currentPID;
-
-    // Call Module 0, Resource Manager
+    // Call Resource Manager
     call MOD_0;
-
-    // ignore Return value in R0
-    // Pop back Context of this module
     multipop(R1, R2, R3);
 
-    // Print the word in R3
+
+// Print the word in R3
     print(R3);
 
 // Release Terminal Now
     multipush(R1, R2, R3);
     R1 = 9;
 	R2 = currentPID;
-
     // Call Resource Manager 
 	call MOD_0;
-
 	multipop(R1, R2, R3);
 	return;
 endif;
 
 // ---- Terminal Read Function (num = 4) ----
-
 if(functionNum == 4) then
 //Acquire Terminal
     multipush(R1, R2, R3);
     R1 = 8;
     R2 = currentPID;
-
-    // Call Module 0, Resource Manager
+    // Call Resource Manager
     call MOD_0;
 
 	multipop(R1, R2, R3);
-
-    // Read statement, for requesting to Read from the terminal
+// Read statement
     read;
-
-    // set STATE to waiting for terminal to Read.
+// set STATE to waiting for terminal to Read.
     [PROCESS_TABLE + currentPID * 16 + 4] = WAIT_TERMINAL;
 
 // MOD_5 for Context Switch (Scheduler)
@@ -66,5 +53,4 @@ if(functionNum == 4) then
 	[physicalAddBuffer] = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE +1] * 16 + 8];
 
     return;
-
 endif;
