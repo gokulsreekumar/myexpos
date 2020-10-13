@@ -1,0 +1,10 @@
+alias functionNum R1;
+
+// ----- Get Free Page (funNum = 1) -----
+if(functionNum == 1) then
+    // WAIT_MEM_COUNT (3) incr
+    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
+    while([SYSTEM_STATUS_TABLE + 2] == 0) do
+        
+    endwhile;
+endif;
