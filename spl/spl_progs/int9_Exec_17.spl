@@ -8,7 +8,7 @@ SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11]*512 -1;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 9;
 
 // Get Filename
-alias fileName R1;
+alias fileName R8;
 fileName = [[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1]*20 + 2 * (userSP - 4)/ 512] * 512 + ((userSP - 4) % 512)];
 
 // inode search for file
@@ -30,7 +30,7 @@ if(file == 60) then
 	ireturn;
 endif;
 
-// file found, Call Exit
+// file found, Call Exit process
 multipush(R0,R1,R2);
 // ARGS: funNum and PID
 R1 = 3;
@@ -101,18 +101,18 @@ counter = 8;
 inodeCodeBlock = 8;
 blockNums = [INODE_TABLE + file*16 + 2]/512 + 1;
 
-
-while(blockNums > 0) do
+// for page table offset, get a new page and also load the code block from Disk using INODE_TABLE
+while(blockNums != 0) do
     multipush(R0,R1,R2,R3,R4,R5,R6);
     R1 = 1;
     call MOD_2;
     [PTBR+counter] = R0;
     [PTBR+counter+1] = "0100";
     loadi(R0,[INODE_TABLE + file*16 + inodeCodeBlock]);
+    multipop(R0,R1,R2,R3,R4,R5,R6);
     inodeCodeBlock = inodeCodeBlock + 1;
     blockNums = blockNums - 1;
     counter = counter + 2;
-    multipop(R0,R1,R2,R3,R4,R5,R6);
 endwhile;
 
 // entry point
