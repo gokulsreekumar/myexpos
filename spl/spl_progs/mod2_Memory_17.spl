@@ -26,7 +26,8 @@ if(functionNum == 1) then
 	endwhile;
 	[MEMORY_FREE_LIST + freePage] = 1;
     R0 = freePage;
-    breakpoint;
+    //assig
+    // breakpoint;
 	return;
 endif;
 
@@ -47,6 +48,7 @@ if(functionNum == 2) then
         endif ;
         var = var + 1;
     endwhile ;
-    breakpoint;
+    //assig
+    // breakpoint;
     return;
 endif;

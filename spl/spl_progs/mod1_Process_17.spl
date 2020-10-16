@@ -3,7 +3,7 @@ alias PID R2;
 
 // ----- Free User Area Page (funNum = 2) -----
 if(functionNum == 2) then
-    // calling Release Page (2), Args: funNum, User Area Page Number to free (get from Process Table)
+    // calling Release Page (2), Args: funNum, PID
 	multipush(R1,R2);
 	R1 = 2;
 	R2 = [PROCESS_TABLE + PID*16 + 11];
@@ -34,12 +34,12 @@ endif;
 // ---- Free Page Table (funNum = 4) ----
 if(functionNum == 4) then
     PTBR = PAGE_TABLE_BASE + PID*20;    
-    // Library
+    // Library Invalidated
     [PTBR + 0] = -1;
 	[PTBR + 1] = "0000";
 	[PTBR + 2] = -1;
 	[PTBR + 3] = "0000";
-
+    // Release Rest
     alias counter R4;
     counter = 4;
     while(counter<20) do

@@ -100,7 +100,7 @@ PTLR = 10;
 [PTBR+15] = "0000";
 
 // Stack
-[PTBR+16] = 76;
+[PTBR+16] = 76;e
 [PTBR+17] = "0110";
 [PTBR+18] = 77;
 [PTBR+19] = "0110";
@@ -157,6 +157,7 @@ while(counter <= 127) do
 	[MEMORY_FREE_LIST + counter] = 0;
 	counter = counter + 1;
 endwhile;
+// ----- Mem_Free_Cnt and Wait_Mem_Cnt in System Status Table -------------
 // wait_mem_cnt = 0, mem_free_count = initial free pool (127-82=45)
 [SYSTEM_STATUS_TABLE + 2] = 45;
 [SYSTEM_STATUS_TABLE + 3] = 0;
