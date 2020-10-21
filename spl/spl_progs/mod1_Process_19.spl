@@ -98,10 +98,10 @@ if(functionNum == 4) then
 	endif;
 
     // Invalidate the DISK MAP TABLE for this Process 
-	alias counter R5;
 	counter = 0;
 	while(counter <= 9) do
 		[DISK_MAP_TABLE + PID*10 + counter] = -1;
+        counter = counter + 1;
 	endwhile;
     return;
 endif;

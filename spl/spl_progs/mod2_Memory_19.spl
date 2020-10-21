@@ -70,11 +70,10 @@ if(functionNum == 5) then
         diskEntry = DISK_STATUS_TABLE + diskEntryCnt*10;
         diskOffset = 2;
         while(diskOffset <= 7) do
-            if([diskEntry + diskOffset] == DiskBlockNumber && 
-                ( [PAGE_TABLE_BASE + 2*diskEntryCnt + 2*diskOffset + 1] == "0100" 
-                ||[PAGE_TABLE_BASE + 2*diskEntryCnt + 2*diskOffset + 1] == "0110") then
+            if([diskEntry + diskOffset] == DiskBlockNumber && ([PAGE_TABLE_BASE + 2*diskEntryCnt + 2*diskOffset + 1] == "0100" || [PAGE_TABLE_BASE + 2*diskEntryCnt + 2*diskOffset + 1] == "0110")) then
                 R0 = [PAGE_TABLE_BASE + 2*diskEntryCnt + 2*diskOffset];
                 [MEMORY_FREE_LIST + R0] = [MEMORY_FREE_LIST + R0] + 1;
+                print(R0);
                 return;
             endif;
             diskOffset = diskOffset + 1;
@@ -86,7 +85,7 @@ if(functionNum == 5) then
     multipush(R1,R2,R5,R6,R7);
 	R1 = 1;
 	call MOD_2;
-	multipop(R1,R2,R5,R6);
+	multipop(R1,R2,R5,R6,R7);
     // Call Disk Load, Args: FunNum, PID, Page Number, Block Number
 	multipush(R0,R1,R2,R5,R6,R7);
 	R4 = DiskBlockNumber;

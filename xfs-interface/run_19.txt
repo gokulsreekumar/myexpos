@@ -1,16 +1,16 @@
 load --init $HOME/myexpos/expl/expl_progs14/shell_1_17.xsm
 load --os $HOME/myexpos/spl/spl_progs/os_startup_14.xsm
-load --module 7 $HOME/myexpos/spl/spl_progs/mod7_Boot_18.xsm
+load --module 7 $HOME/myexpos/spl/spl_progs/mod7_Boot_19.xsm
 load --module 5 $HOME/myexpos/spl/spl_progs/mod5_Scheduler.xsm
 load --module 4 $HOME/myexpos/spl/spl_progs/mod4_Device_18.xsm
-load --module 2 $HOME/myexpos/spl/spl_progs/mod2_Memory_17.xsm
-load --module 1 $HOME/myexpos/spl/spl_progs/mod1_Process_17.xsm
+load --module 2 $HOME/myexpos/spl/spl_progs/mod2_Memory_19.xsm
+load --module 1 $HOME/myexpos/spl/spl_progs/mod1_Process_19.xsm
 load --module 0 $HOME/myexpos/spl/spl_progs/mod0_Resource_18.xsm
 load --int=10 $HOME/myexpos/spl/spl_progs/int10.xsm
-load --exhandler $HOME/myexpos/spl/spl_progs/haltprog.xsm
+load --exhandler $HOME/myexpos/spl/spl_progs/exception_handler.xsm
 load --library $HOME/myexpos/expl/library.lib
 load --int=timer $HOME/myexpos/spl/spl_progs/timers14.xsm
-load --int=9 $HOME/myexpos/spl/spl_progs/int9_Exec_18.xsm
+load --int=9 $HOME/myexpos/spl/spl_progs/int9_Exec_19.xsm
 load --int=7 $HOME/myexpos/spl/spl_progs/int7_s15.xsm
 load --int=6 $HOME/myexpos/spl/spl_progs/int6_s16.xsm
 load --int=console $HOME/myexpos/spl/spl_progs/console_int_16.xsm

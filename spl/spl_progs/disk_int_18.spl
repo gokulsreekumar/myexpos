@@ -1,4 +1,4 @@
-breakpoint;
+//breakpoint;
 // Switch Stacks and Backup (Hardware Interrupt)
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11]*512 -1;
@@ -18,5 +18,5 @@ endwhile;
 restore;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
-breakpoint;
+//breakpoint;
 ireturn; 

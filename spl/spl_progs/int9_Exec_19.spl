@@ -1,12 +1,13 @@
-//Switch Stacks
+//-------- Switch Stacks --------
 alias userSP R0;
 userSP = SP;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11]*512 -1;
-// Set ModeFlag
+
+// -------- Set ModeFlag -------- 
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 9;
 
-// Get Filename
+// -------- Get Filename -------- 
 alias fileName R1;
 fileName = [[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1]*20 + 2 * (userSP - 4)/ 512] * 512 + ((userSP - 4) % 512)];
 // inode search for file
@@ -20,7 +21,7 @@ while(file <= 59) do
 	endif;
 endwhile;
 
-// file not found
+// -------- file not found
 if(file == 60) then
 	[[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1]*20 + 2 * (userSP - 1)/ 512] * 512 + ((userSP - 1) % 512)] = -1;
 	SP = userSP;
@@ -28,14 +29,13 @@ if(file == 60) then
 	ireturn;
 endif;
 
-// file found, Call Exit process
+// -------- file found, Call Exit process -------- 
 multipush(R0,R1,R2);
 // ARGS: funNum and PID
 R1 = 3;
 R2 = [SYSTEM_STATUS_TABLE + 1];
 call MOD_1;
 multipop(R0,R1,R2);
-
 // ----- Re-Aquire UArea Page ------------------------------------
 alias UAreaPage R3;
 UAreaPage = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11];
@@ -47,14 +47,13 @@ UAreaPage = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11];
 // ----- Kernal Stack for New Process ----------------------------
 SP = UAreaPage * 512 - 1;
 
-// ---- Per Process Table for New Process ------------------------
+// ---- Per Process Resource Table for New Process ------------------------
 alias cnt R8;
 cnt = 0;
 while( cnt < 8 ) do
     [UAreaPage*512 + 496 + cnt*2] = -1;
     cnt = cnt + 1;
 endwhile;
-
 // ------ Process table for New Process -----------------------------------
 // STATE(4) and Inode_index Field (7)
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 4] = RUNNING;
@@ -97,7 +96,7 @@ multipop(R0,R1,R2,R3);
 [PTBR+14] = -1;
 [PTBR+15] = "0000";
 
----- Page 1 Allocation ----------------
+// ---- Page 1 Allocation ----------------
 
 // Calling Get Code Page (funNum = 5, Mem Manager Module)
 // Args: FunNum, Block Num (Get from the Inode Table Entry for the File)
@@ -106,11 +105,10 @@ multipush(R0,R1,R2,R3);
 R1 = 5;
 R2 = [INODE_TABLE + file*16 + 8];
 call MOD_2;
-multipop(R0,R1,R2,R3);
-
 // Assign the New Page Number in Page Table
 [PTBR+8] = R0;
 [PTBR+9] = "0100";
+multipop(R0,R1,R2,R3);
 
 
 // ---- Disk Map Table Set Up -----------------------------------------
@@ -127,9 +125,9 @@ multipop(R0,R1,R2,R3);
 [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 8] = -1;
 [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 9] = -1;
 
+breakpoint;
 // ----- Entry Point for the New Process -----------------------------
 [[PTBR + 16] * 512] = [[PTBR + 8] * 512 + 1];
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = 8*512;
 
 // Mode Flag
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0;
