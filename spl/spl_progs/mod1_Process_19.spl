@@ -61,7 +61,7 @@ if(functionNum == 4) then
     // Check Disk Map Table for Any Temporary Disk Block Allocations for Stack/Heap
     // Heaps:
     if([DISK_MAP_TABLE + PID*10 + 2] != -1) then
-        // Call Release Block Functin (FunNum = 4, Memory Manager)
+        // Call Release Block Function (FunNum = 4, Memory Manager)
         // ARGS: FunNum, Block Number, PID
 		multipush(R1,R2,R3,R4);
 		R3 = PID;

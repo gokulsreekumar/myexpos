@@ -60,6 +60,8 @@ loadi(23,36);
 loadi(2, 15);
 loadi(3, 16);
 
+
+// -------- Disk Data Structure -------------
 // ---- Inode Table --------
 loadi(59, 3);
 loadi(60, 4);

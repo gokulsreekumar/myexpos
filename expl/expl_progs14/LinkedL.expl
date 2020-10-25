@@ -1,0 +1,42 @@
+type
+  List
+  {
+    int data;
+    List next;
+  }
+endtype
+
+int main()
+{
+  decl
+    int length, x, tmp;
+    List p, q,;
+  enddecl
+
+  begin
+    head=null;
+    tmp = exposcall("Read", -1, length); 
+
+    q=head;
+    while (length!=0)  do
+      tmp = exposcall("Read", -1, x);
+      p = exposcall("Alloc");
+      p.data=x;
+      p.next=null;
+      if (head==null) then
+        head=p;
+        q=p;
+      else
+        q.next=p;
+        q=q.next;
+      endif;
+      length=length-1;
+    endwhile;
+    p=head;
+    while(p!=null)  do
+      tmp = exposcall("Write", -2, p.data);
+      p=p.next;
+    endwhile;
+    return 0;
+  end
+}

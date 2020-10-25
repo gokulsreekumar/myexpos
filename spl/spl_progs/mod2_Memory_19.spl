@@ -65,13 +65,13 @@ if(functionNum == 5) then
     alias diskEntryCnt R5;
     alias diskEntry R6;
     alias diskOffset R7;
-    diskEntry = 0;
+    diskEntryCnt = 0;
     while(diskEntryCnt <= 15) do
-        diskEntry = DISK_STATUS_TABLE + diskEntryCnt*10;
-        diskOffset = 2;
+        diskEntry = DISK_MAP_TABLE + diskEntryCnt*10;
+        diskOffset = 4;
         while(diskOffset <= 7) do
-            if([diskEntry + diskOffset] == DiskBlockNumber && ([PAGE_TABLE_BASE + 2*diskEntryCnt + 2*diskOffset + 1] == "0100" || [PAGE_TABLE_BASE + 2*diskEntryCnt + 2*diskOffset + 1] == "0110")) then
-                R0 = [PAGE_TABLE_BASE + 2*diskEntryCnt + 2*diskOffset];
+            if([diskEntry + diskOffset] == DiskBlockNumber && ([PAGE_TABLE_BASE + 20*diskEntryCnt + 2*diskOffset + 1] == "0100" || [PAGE_TABLE_BASE + 20*diskEntryCnt + 2*diskOffset + 1] == "1100" )) then
+                R0 = [PAGE_TABLE_BASE + 20*diskEntryCnt + 2*diskOffset];
                 [MEMORY_FREE_LIST + R0] = [MEMORY_FREE_LIST + R0] + 1;
                 print(R0);
                 return;
@@ -94,5 +94,6 @@ if(functionNum == 5) then
     R1 = 2;
 	call MOD_4;
 	multipop(R0,R1,R2,R5,R6,R7);
+    breakpoint;
     return;
 endif;

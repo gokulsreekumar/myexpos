@@ -1,5 +1,5 @@
 //-------- Switch Stacks --------
-alias userSP R0;
+alias userSP R10;
 userSP = SP;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11]*512 -1;
@@ -10,19 +10,19 @@ SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11]*512 -1;
 // -------- Get Filename -------- 
 alias fileName R1;
 fileName = [[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1]*20 + 2 * (userSP - 4)/ 512] * 512 + ((userSP - 4) % 512)];
+
 // inode search for file
-alias file R2;
-file = 0;
-while(file <= 59) do
-	if(([INODE_TABLE + file*16 + 1] == fileName) && ([INODE_TABLE + file*16] == EXEC)) then
+alias i R2;
+i = 0;
+while(i <= 59) do
+	if(([INODE_TABLE + i*16 + 1] == fileName) && ([INODE_TABLE + i*16] == EXEC)) then
 		break;
 	else
-		file = file + 1;
+		i = i + 1;
 	endif;
 endwhile;
-
-// -------- file not found
-if(file == 60) then
+// ------- file not found -----------
+if(i == 60) then
 	[[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1]*20 + 2 * (userSP - 1)/ 512] * 512 + ((userSP - 1) % 512)] = -1;
 	SP = userSP;
 	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0;
@@ -57,7 +57,7 @@ endwhile;
 // ------ Process table for New Process -----------------------------------
 // STATE(4) and Inode_index Field (7)
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 4] = RUNNING;
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 7] = file;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 7] = i;
 
 // ----- Page Table Set Up for New Process -----------------------------------
 PTBR = PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20;
@@ -103,7 +103,7 @@ multipop(R0,R1,R2,R3);
 
 multipush(R0,R1,R2,R3);
 R1 = 5;
-R2 = [INODE_TABLE + file*16 + 8];
+R2 = [INODE_TABLE + i*16 + 8];
 call MOD_2;
 // Assign the New Page Number in Page Table
 [PTBR+8] = R0;
@@ -118,14 +118,14 @@ multipop(R0,R1,R2,R3);
 [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 1] = -1;
 [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 2] = -1;
 [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 3] = -1;
-[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 4] = [INODE_TABLE + file*16 + 8];
-[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 5] = [INODE_TABLE + file*16 + 9];
-[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 6] = [INODE_TABLE + file*16 + 10];
-[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 7] = [INODE_TABLE + file*16 + 11];
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 4] = [INODE_TABLE + i*16 + 8];
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 5] = [INODE_TABLE + i*16 + 9];
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 6] = [INODE_TABLE + i*16 + 10];
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 7] = [INODE_TABLE + i*16 + 11];
 [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 8] = -1;
 [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + 9] = -1;
 
-breakpoint;
+// breakpoint;
 // ----- Entry Point for the New Process -----------------------------
 [[PTBR + 16] * 512] = [[PTBR + 8] * 512 + 1];
 
@@ -134,4 +134,5 @@ breakpoint;
 SP = 8*512;
 PTLR = 10;
 PTBR = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 14];
+// breakpoint;
 ireturn;
