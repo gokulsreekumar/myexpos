@@ -1,0 +1,23 @@
+int main() 
+{
+    decl
+        int tmp,pid;
+    enddecl
+    begin
+        tmp=exposcall("Write",-2,"Forking");
+        pid = exposcall("Fork");
+        if(pid == -1) then
+            tmp = exposcall("Write", -2, "ForkNotDone");
+        else
+            if(pid != 0) then
+                tmp = exposcall("Write",-2,"ExecPRNT");
+                tmp = exposcall("Exec", "even_nos.xsm");
+            endif;
+            if(pid == 0) then
+                tmp = exposcall("Write",-2,"ExecCHILD");
+                tmp = exposcall("Exec", "odd_nos.xsm");
+            endif;
+        endif;
+        return 0;
+    end 
+}
