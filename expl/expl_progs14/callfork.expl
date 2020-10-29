@@ -7,7 +7,7 @@ int main()
         tmp=exposcall("Write",-2,"Forking");
         pid = exposcall("Fork");
         if(pid == -1) then
-            tmp = exposcall("Write", -2, "ForkNotDone");
+            tmp = exposcall("Write", -2, "Fork_Fail");
         else
             if(pid != 0) then
                 tmp = exposcall("Write",-2,"ExecPRNT");

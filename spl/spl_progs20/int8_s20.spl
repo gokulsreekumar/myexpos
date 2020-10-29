@@ -6,9 +6,9 @@ userSP = SP;
 SP = [PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+11]*512-1;
 
 alias childPID R2;
+alias cnt R4;
 alias parentPTBR R5;
 parentPTBR = PTBR;
-alias cnt R4;
 
 // ---- Call Get PCB Entry (Process Manager) ---------------- 
 // Args: funNum = 1, no Args
