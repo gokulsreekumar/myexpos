@@ -1,3 +1,4 @@
+//----  FORK SYCALL  --------------------------------------------------------
 //----  Set MODE Flag and Switch Stack ------------------------
 alias userSP R1;
 userSP = SP; 
@@ -29,15 +30,20 @@ if(childPID == -1) then
 endif;
 
 // ---- Allocate the Heap for Parent, Get Free Page --------------------
-multipush(R1, R2, R3, R4, R5);
-R1 = 1;
-call MOD_2;
-[parentPTBR + 4] = R0;
-[parentPTBR + 5] = "0110";
-call MOD_2;
-[parentPTBR + 6] = R0;
-[parentPTBR + 7] = "0110";
-multipop(R1, R2, R3,R4, R5);
+if([parentPTBR + 4] == -1 || [parentPTBR + 5] == "0000") then
+    multipush(R1, R2, R3, R4, R5);
+    R1 = 1;
+    call MOD_2;
+    multipop(R1, R2, R3, R4, R5);
+    [parentPTBR + 4] = R0;
+    [parentPTBR + 5] = "0110";
+    multipush(R1, R2, R3, R4, R5);
+    R1 = 1;
+    call MOD_2;
+    [parentPTBR + 6] = R0;
+    [parentPTBR + 7] = "0110";
+    multipop(R1, R2, R3,R4, R5);
+endif;
 
 // ---- Stack for Child Process, calling Get Free Page function ------------
 alias childPTBR R3;
@@ -49,6 +55,9 @@ R1 = 1;
 call MOD_2;
 [childPTBR + 16] = R0;
 [childPTBR + 17] = [parentPTBR + 17];
+multipop(R1, R2, R3, R4, R5);
+multipush(R1, R2, R3, R4, R5);
+R1 = 1;
 call MOD_2;
 [childPTBR + 18] = R0;
 [childPTBR + 19] = [parentPTBR + 19];
@@ -102,7 +111,7 @@ endwhile;
 
 // ---- PAGE TABLE FOR CHILD PROCESS ---------------------------
 childPTBR = PAGE_TABLE_BASE + childPID * 20;
-// Library, Heap and Code copy from Parent, Stack Already set up above
+// Library, Heap and Code copy from Parent, Stack has been Already set up above
 // If any of them shared, increment Mem_Free_List entry for it
 cnt = 0;
 while(cnt < 16) do
