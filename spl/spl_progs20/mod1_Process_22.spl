@@ -38,7 +38,7 @@ if(functionNum == 2) then
                 multipush(R1,R2,R5);
                 R3 = PID;
                 R1 = 7;
-                R2 = cnt;
+                R2 = [[PROCESS_TABLE + PID * 16 + 11] * 512 + 496 + 2*cnt + 1];
                 call MOD_0;
                 multipop(R1,R2,R5);
             endif;

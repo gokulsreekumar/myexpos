@@ -99,7 +99,7 @@ if(SysCallNum == 18) then
     // Args: SEMID, PID
     multipush(R1, R2, R3);
     R1 = 7;
-    R2 = SEMID;
+    R2 = [[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 + 496 + 2*SEMID + 1];
     R3 = [SYSTEM_STATUS_TABLE + 1];
     call MOD_0;
     multipop(R1, R2, R3);
