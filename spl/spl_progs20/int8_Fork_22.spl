@@ -1,4 +1,7 @@
 //----  FORK SYCALL  --------------------------------------------------------
+// assig: Kernel Mode Switch cnt
+[70*512 + 511] = [70*512 + 511] + 1; 
+
 //----  Set MODE Flag and Switch Stack ------------------------
 alias userSP R1;
 userSP = SP; 
@@ -13,6 +16,7 @@ parentPTBR = PTBR;
 
 // ---- Call Get PCB Entry (Process Manager) ---------------- 
 // Args: funNum = 1, no Args
+// returns a new PID for childPID by looking through Process Table
 multipush(R1, R2, R5);
 R1 = 1;
 call MOD_1;
@@ -95,16 +99,16 @@ multipop(R1, R2, R3,R4, R5);
 //---- STATE
 [PROCESS_TABLE + childPID * 16 + 4] = CREATED;
 
-//PER-PROCESS RESOURCE TABLE -- CHILD
+// ----- PER-PROCESS RESOURCE TABLE -- CHILD ---------------
 cnt = 0;
 alias resourceTable R15;
 resourceTable = [PROCESS_TABLE + childPID*16 + 11]*512 + 496;
 while( cnt < 16 ) do
     [resourceTable + cnt] = [ [PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+11] * 512 + 496 + cnt];
 
-    //If the resource is semaphore (check the Resource Identifier field in the per-process resource table)
-    //using the sempahore table index, 
-    //increment the PROCESS COUNT field in the semaphore table entry
+    // If the resource is semaphore (check the Resource Identifier field in the per-process resource table)
+    // using the sempahore table index, 
+    // increment the PROCESS COUNT field in the semaphore table entry
     if( cnt%2 == 0 &&  [resourceTable + cnt]==1 ) then
         [SEMAPHORE_TABLE + [resourceTable + cnt + 1]*4 + 1] = [SEMAPHORE_TABLE + [resourceTable + cnt + 1]*4 + 1] + 1;
     endif ;

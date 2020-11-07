@@ -16,7 +16,14 @@ if(functionNum == 1) then
     // wait_mem_count and mem_free_count
     [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] - 1;
 	[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+
     
+    // assig: Max Mem Count
+    if([70*512 + 510] < (128 -[SYSTEM_STATUS_TABLE + 2])) then
+        [70*512 + 510] = (128 -[SYSTEM_STATUS_TABLE + 2]);
+    endif;
+
+
     // find free page using mem free list
     alias freePage R5;
 	freePage = 0;

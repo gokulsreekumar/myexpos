@@ -38,7 +38,8 @@ endif;
 // ----- Exit Process (funNum = 3) ----
 if(functionNum == 3) then
 
-    // Loop through Process Table Entries and Set to Ready and Mark Orphan Appropriately
+    // Loop through Process Table Entries and Set to Ready 
+    // Mark Orphan Process Appropriately
     // NOT VALID when called through EXEC
     if([PROCESS_TABLE + PID*16 + 9] != 9) then
         alias cnt R5;

@@ -17,6 +17,9 @@ if(functionNum == 2) then
     [DISK_STATUS_TABLE + 2] = pageNum;
     [DISK_STATUS_TABLE + 3] = blockNum;
     
+    // Disc Access Count
+    [70*512 + 508] = [70*512 + 508] + 1;
+
     load(pageNum, blockNum);
     [PROCESS_TABLE + currentPID*16 + 4] = WAIT_DISK;
     

@@ -134,7 +134,6 @@ endwhile;
 //----- BP placed in start of Kernel Stack of Child Process --------------------
 [UAreaPage*512] = BP; 
 
-
 //---- Set Up the Return Values in Parent and Child --------------------------
 alias physicalAddrRetVal R9;
 

@@ -1,3 +1,7 @@
+//------- SEMGET, SEMRELEASE --------------------------------------------
+// assig: Kernel Mode Switch cnt
+[70*512 + 511] = [70*512 + 511] + 1; 
+
 // ------  Extract Syscall Number from User stack (userSP - 5, will have it, as userSP-4 will have args for the Syscall) -------------
 alias SysCallNum R1;
 alias userSP R2;
@@ -96,7 +100,7 @@ if(SysCallNum == 18) then
         ireturn; 
     endif;
     //---- Call Release Semaphore (Resource Manager, funNum = 7) -----
-    // Args: SEMID, PID
+    // Args: SEM_TABLE_INDEX, PID
     multipush(R1, R2, R3);
     R1 = 7;
     R2 = [[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 + 496 + 2*SEMID + 1];

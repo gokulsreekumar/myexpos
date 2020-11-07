@@ -1,3 +1,8 @@
+// ------ EXEC SYSCALL --------------------------------------------------------
+
+// assig: Kernel Mode Switch cnt
+[70*512 + 511] = [70*512 + 511] + 1; 
+
 //-------- Switch Stacks --------
 alias userSP R10;
 userSP = SP;
@@ -43,6 +48,11 @@ UAreaPage = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11];
 // Incr mem free list entry, decrement mem_free_cnt in sys status  
 [MEMORY_FREE_LIST + UAreaPage] = [MEMORY_FREE_LIST + UAreaPage] + 1;
 [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+
+	// assig: Max Mem Count
+	if([70*512 + 510] < (128 - [SYSTEM_STATUS_TABLE + 2])) then
+		[70*512 + 510] = (128 - [SYSTEM_STATUS_TABLE + 2]);
+	endif;
 
 // ----- Kernal Stack for New Process ----------------------------
 SP = UAreaPage * 512 - 1;

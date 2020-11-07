@@ -41,20 +41,17 @@ if ( functionNum == 6 ) then
 endif;
 
 // ---- Release Semaphore Function (num = 7) -------
-// Args: SEMID, PID
+// Args: Semaphore_Table_Index, PID
 if ( functionNum == 7 ) then
-    alias SEMID R2;
+    alias SEM_TABLE_INDEX R2;
     alias currentPID R3;
 
-    // Get the Semaphore Table Index from Per Process Resource Table using SEMID (Semaphore Descriptor : Index in Per Process Resource Table)
-    alias SEM_TABLE_INDEX R4;
-    SEM_TABLE_INDEX = [[PROCESS_TABLE + currentPID*16 + 11] * 512 + 496 + 2*SEMID + 1];
-
     alias cnt R5;
-    // If the semaphore to be released (given by SEMID) is locked by current process
-    if([SEMAPHORE_TABLE + SEMID*4] == currentPID) then
+    // If the semaphore to be released (given by SEM_TABLE_INDEX) is locked by current process
+    if([SEMAPHORE_TABLE + SEM_TABLE_INDEX*4] == currentPID) then
         // set Locking Pid to -1, Unlock
-        [SEMAPHORE_TABLE + SEMID*4] = -1;
+        [SEMAPHORE_TABLE + SEM_TABLE_INDEX*4] = -1;
+        
         // Loop Process Table to WakeUp all Prcoesses blocked by this semaphore 
         cnt = 0;
         while( cnt < 16 ) do

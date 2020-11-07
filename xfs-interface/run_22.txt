@@ -21,5 +21,3 @@ load --int=6 $HOME/myexpos/spl/spl_progs20/int6_s16.xsm
 load --int=console $HOME/myexpos/spl/spl_progs20/console_int_16.xsm
 load --int=disk $HOME/myexpos/spl/spl_progs20/disk_int_18.xsm
 load --idle $HOME/myexpos/expl/expl_progs/idleprog.xsm
-rm 3Pros.xsm
-load --exec $HOME/myexpos/expl/expl_progs14/3Pros.xsm

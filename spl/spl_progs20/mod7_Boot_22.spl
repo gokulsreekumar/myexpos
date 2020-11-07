@@ -224,4 +224,11 @@ endwhile;
 [SYSTEM_STATUS_TABLE + 2] = 45;
 [SYSTEM_STATUS_TABLE + 3] = 0;
 
+
+// Counts 
+[70*512 + 508] = 0; // Disc Access
+[70*512 + 509] = 0; // Context Switches
+[70*512 + 510] = (128-45); // Max Memory Usage
+[70*512 + 511] = 0; // Switch to Kernel Mode
+
 return;
