@@ -1,17 +1,18 @@
 int main()
 {
 decl
-    int temp, pid;
+    int temp, pid, a;
     string input;
 enddecl
 begin
-    while(1==1) do
-        temp = exposcall("Write", -2, "Enter File");
-        temp = exposcall("Read", -1, input);
-        if(input != "Shutdown") then
+    a=1;
+    while(a == 1) do
+        temp = exposcall("Write",-2,"Enter CMD");
+        temp = exposcall("Read",-1, input);
+        if(input != "SD") then
             pid = exposcall("Fork");
             if(pid < 0) then
-                temp = exposcall("Write",-2, "Fork_Failure");
+                temp = exposcall("Write",-2, "Fork Failure");
                 continue;
             endif;
             if(pid != 0) then
