@@ -141,7 +141,7 @@ if( SysCallNum == 4) then
     alias inodeEntry R9;
     inodeEntry = INODE_TABLE + i*16;
 
-    // DOUBT ?????
+    // VERIFY !!!!!!!!!!!!!
     // If the exclusive permission is set
     // 	if the current user is not root and the current user does not own the file
     // 		return -1. 
