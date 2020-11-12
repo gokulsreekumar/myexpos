@@ -1,0 +1,95 @@
+//------------- WRITE SYSCALL ------------------------------------------------------------------------------
+// assig: Kernel Mode Switch
+[70*512 + 511] = [70*512 + 511] + 1; 
+
+//---------- Set the Mode Flag for WRITE = 5 ------------------------------ 
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 5;
+
+// Store UserSp in a Variable
+alias userSP R0;
+userSP = SP;
+
+//------------- Switch Stacks ----------------------------------------------------
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
+//Set SP to KTPR
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]) * 16 + 11] * 512 -1;
+
+// Get Arg1 == File Descriptor
+
+alias physicalPageNumber R1;
+alias offset R2;
+alias fileDescPhysicalAddr R3;
+alias fileDescriptor R4;
+
+alias physicalAddrRetVal R6;
+physicalAddrRetVal = ([PTBR + 2 * (userSP - 1)/ 512] * 512) + ((userSP - 1) % 512);
+
+physicalPageNumber = [PTBR + 2 * ((userSP-4)/512)];
+offset = (userSP-4)%512;
+fileDescPhysicalAddr = physicalPageNumber * 512 + offset;
+fileDescriptor = [fileDescPhysicalAddr];
+
+alias processEntry R10;
+processEntry = PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16;
+
+if (fileDescriptor != -2) then
+    //-------- TERMINAL Write ---------------------------------------------
+    //-------- Call Terminal Write Function in Device Manager --------
+	alias word R5;
+    word = [[PTBR + 2 * ((userSP-3)/512)]*512 + ((userSP-3)%512)];
+
+    // Call Device Manager Module, to invoke Terminal Write Function
+    multipush(R0, R1, R2, R3, R4, R5);
+    // Args:
+    // funNum, PID, word to Print
+    R1 = 3;
+    R2 = [SYSTEM_STATUS_TABLE + 1]; 
+    R3 = word; 
+    call MOD_4;
+    multipop(R0, R1, R2, R3, R4, R5);
+
+    // Return 0, Success
+    [physicalAddrRetVal] = 0;
+    SP = userSP;
+    [PROCESS_TABLE+ [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+else
+    //--------  File Write ---------------------------------------------
+    // Validity of fileDescriptor
+    if(fileDescriptor < 0 || fileDescriptor > 7) then
+        //return -1
+        [physicalAddrRetVal] = -1;
+        [processEntry + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    // Get Per Process Resource Table Entry
+    alias perProcessEntry R7;
+    perProcessEntry = [processEntry + 11]*512 + RESOURCE_TABLE_OFFSET + fileDescriptor*2;
+
+    // /* No file is open with this file descriptor. */
+    // if Resource Id of perProcessTable Entry is not File OR Invalid
+    if([perProcessEntry + 0] == -1 || [perProcessEntry + 0] != FILE) then
+        //return -1
+        [physicalAddrRetVal] = -1;
+        [processEntry + 9] = 0;
+        SP = userSP;
+        ireturn; 
+    endif;
+
+    // Get Index of OpenFileTable Entry and Inode Table Entry 
+    alias openFileTableIndex R8; 
+    alias inodeindex R9;
+    openFileTableIndex = [perProcessEntry + 1];
+    inodeindex = [OPEN_FILE_TABLE + openFileTableIndex*4];
+
+    // If the current user is not root and the current user does not own the file and
+    // if the exclusive permission is set, return -3. 
+    if([curr_process_table + 3] != 1 &&  [curr_process_table + 3] != [INODE_TABLE + 16*inode_table_index + 3] && [INODE_TABLE + 16*inode_table_index + 4] == EXCLUSIVE)
+
+endif;
+
+SP = userSP;
+[PROCESS_TABLE+ [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+ireturn;

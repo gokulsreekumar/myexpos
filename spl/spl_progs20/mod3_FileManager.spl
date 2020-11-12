@@ -28,7 +28,7 @@ if(functionNum == 2) then
 	multipop(R1,R2,R3,R4,R5,R6);
 
     // Check if Buffer in Buffer Table has Different Disk Block or invalid
-	if([bufferTableEntry + 0] != disk_block_num && [bufferTableEntry + 0] != -1) then
+	if([bufferTableEntry + 0] != disk_block_num) then
         // If Buffer Contents are Dirty
         // then call Disk Store in Device Manager to store contents of Buffer to Disk
         // Args: FunNum, PID, Page Number (from BUFFER_BASE + buffer_num offset PAGE of Buffer Cache), Block Number
@@ -43,25 +43,25 @@ if(functionNum == 2) then
             //Mark the buffer as clean (DIRTY = 0) in the corresponding buffer table entry;
 			[bufferTableEntry + 1] = 0;
 		endif;
+
+        // Load the Required Disk Block Num into the Buffer Block Page
+        // Calling Disk Load Function in Device Manager
+        // Args: FunNum, PID, Page Number (from BUFFER_BASE + buffer_num offset PAGE of Buffer Cache), Block Number
+        multipush(R1,R2,R3,R4,R5,R6);
+        R1 = DISK_LOAD;
+        R4 = disk_block_num;			
+        R3 = BUFFER_BASE + buffer_num;		
+        R2 = [SYSTEM_STATUS_TABLE + 1];
+        call MOD_4;
+        multipop(R1,R2,R3,R4,R5,R6);	
+
+        // Set the new disk_block_num in Buffer Table Entry
+        [bufferTableEntry + 0] = disk_block_num;
 	endif;
-
-    // Load the Required Disk Block Num into the Buffer Block Page
-    // Calling Disk Load Function in Device Manager
-    // Args: FunNum, PID, Page Number (from BUFFER_BASE + buffer_num offset PAGE of Buffer Cache), Block Number
-    multipush(R1,R2,R3,R4,R5,R6);
-    R1 = DISK_LOAD;
-    R4 = disk_block_num;			
-    R3 = BUFFER_BASE + buffer_num;		
-    R2 = [SYSTEM_STATUS_TABLE + 1];
-    call MOD_4;
-    multipop(R1,R2,R3,R4,R5,R6);	
-
-    // Set the new disk_block_num in Buffer Table Entry
-    [bufferTableEntry + 0] = disk_block_num;
 
     // Copy the contents in the offset location in the buffer to the physical address given as input
 	[buff] = [(BUFFER_BASE + buffer_num)*512 + offset];
-    
+
     //calling RELEASE_BUFFER
 	multipush(R1,R2,R3,R4,R5,R6);
 		R1 = RELEASE_BUFFER;
