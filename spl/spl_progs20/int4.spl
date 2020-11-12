@@ -141,11 +141,9 @@ if( SysCallNum == 4) then
     alias inodeEntry R9;
     inodeEntry = INODE_TABLE + i*16;
 
-    // VERIFY !!!!!!!!!!!!!
     // If the exclusive permission is set
     // 	if the current user is not root and the current user does not own the file
     // 		return -1. 
-
     if( [inodeEntry + 4] == EXCLUSIVE) then
         if( ([processTableEntry + 3] != 1) && [inodeEntry + 3] != [processTableEntry + 3]) then
             // return -1
@@ -155,7 +153,6 @@ if( SysCallNum == 4) then
             ireturn;  
         endif;
     endif;
-
     // Acquire a Lock on File by calling the acquire_inode() in Resource Manager
     // args: funNum(4), inode_index, PID
     multipush(R1,R2,R3,R4,R5);
@@ -191,25 +188,27 @@ if( SysCallNum == 4) then
     alias DiskBlockNum R8;
     while ( cnt < 12 ) do
         DiskBlockNum = [inodeEntry + cnt];
-        if ( DiskBlockNum != -1) then
+        if ( DiskBlockNum != -1 ) then
             // If the disk block is loaded into a buffer, 
             // and the DIRTY BIT is set, Then Reset the DIRTY BIT. 
 
             // buffer number in BUFFER TABLE is given by (Disk Block Number % MAX_BUFFER)
             alias bufferNumber R7;
             bufferNumber = DiskBlockNum % MAX_BUFFER;
-            if( [BUFFER_TABLE + bufferNumber + 1] == 1) then    // checking the DIRTY BIT Field
+            // If disk block is loaded into buffer:
+            // checking the DIRTY BIT Field
+            if( [BUFFER_TABLE + bufferNumber*4 + 0] == DiskBlockNum && [BUFFER_TABLE + bufferNumber*4 + 1] == 1) then
                 // Reset DIRTY BIT
-                [BUFFER_TABLE + bufferNumber + 1] = 0;
-                // Call Release Block to free this Disk Block
-                // args: funNum(4), Block Number, PID
-                multipush(R1,R2,R3,R4,R5,R6,R7,R8);
-                    R1 = 4;
-                    R2 = DiskBlockNum;
-                    R3 = [SYSTEM_STATUS_TABLE + 1];
-                    call MOD_2;
-                multipop(R1,R2,R3,R4,R5,R6,R7,R8);
+                [BUFFER_TABLE + bufferNumber*4 + 1] = 0;
             endif;
+            // Call Release Block to free this Disk Block
+            // args: funNum(4), Block Number, PID
+            multipush(R1,R2,R3,R4,R5,R6,R7,R8);
+                R1 = 4;
+                R2 = DiskBlockNum;
+                R3 = [SYSTEM_STATUS_TABLE + 1];
+                call MOD_2;
+            multipop(R1,R2,R3,R4,R5,R6,R7,R8);
         endif;
         cnt = cnt + 1;
     endwhile;

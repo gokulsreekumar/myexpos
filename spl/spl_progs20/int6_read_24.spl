@@ -58,6 +58,7 @@ else
         SP = userSP;
         ireturn; 
     endif;
+
     alias openFileTableIndex R5; 
     alias inodeindex R6;
     openFileTableIndex = [perProcessEntry + 1];
@@ -80,6 +81,7 @@ else
         SP = userSP;
         ireturn;
     endif;
+
     alias lseek_addr R7;
     lseek_addr = OPEN_FILE_TABLE + openFileTableIndex*4 + 2;
 
@@ -153,7 +155,6 @@ else
     [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
     SP = userSP;
     ireturn;
-
 endif;
 SP = userSP;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;

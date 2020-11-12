@@ -41,7 +41,6 @@ if(SysCallNum == 2) then
     //--- Finding Free PER PROCESS RESOURCE TABLE Entry ------------
     alias cnt R6;
     cnt = 0;
-
     while ( cnt < 8 ) do
         if([perProcessEntry + cnt*2] == -1) then
             break;
@@ -75,9 +74,9 @@ if(SysCallNum == 2) then
         ireturn;
     endif;
 
-    //--- Setting Up the Per Process Resource Table Entry --------
-    [perProcessEntry + cnt*2] =  FILE;
-    [perProcessEntry + cnt*2 + 1] =  openFileTableIndex;
+    //--- Setting Up the Per Process Resource Table Entry ----------------------------------
+    [perProcessEntry + cnt*2] =  FILE;                    // RId
+    [perProcessEntry + cnt*2 + 1] =  openFileTableIndex;  // Index
 
     //---- Return the cnt => fd : File Descriptor, Index in the Per Process Reource Table Entry 
     [physicalAddrRetVal] = cnt;
@@ -94,7 +93,7 @@ endif;
 // -1 : fd, file descriptor is invalid
 if(SysCallNum == 3) then
     //---- Mode Flag -----
-    [processTableEntry + 9] = 2;
+    [processTableEntry + 9] = 3;
 
     //--- Get Arg ---------
     alias fd R5;
@@ -105,7 +104,7 @@ if(SysCallNum == 3) then
         [physicalAddrRetVal] = -1;
         [processTableEntry + 9] = 0;
         SP = userSP;
-        ireturn; 
+        ireturn;
     endif;
 
     // Validity of Per Process Reource Table Entry
