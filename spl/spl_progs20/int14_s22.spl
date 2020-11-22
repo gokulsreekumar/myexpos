@@ -82,7 +82,7 @@ if(SysCallNum == 20) then
         alias physicalAddrRetVal R5;
         physicalAddrRetVal = [PTBR + 2 * (userSP-1)/512] * 512 + ((userSP-1)%512);
         [physicalAddrRetVal] = -1;
-        ireturn; 
+        ireturn;
     endif;
 
     // If Semaphore is Locked

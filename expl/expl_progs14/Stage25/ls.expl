@@ -1,0 +1,23 @@
+int main()
+{
+    decl
+        int tmp, fd, i, a;
+        string word;
+    enddecl
+    begin
+        fd = exposcall("Open", "root");
+        i = 0;
+        while(i < 60)  do
+            a = exposcall("Read", fd, word);
+            if(word == "-1") then
+                i = i + 1;
+                tmp = exposcall("Seek", fd, 7);
+                continue;
+            endif;
+            tmp = exposcall("Write", -2, word);
+            tmp = exposcall("Seek", fd, 7);
+            i = i + 1;
+        endwhile;
+        return 0;
+    end
+}

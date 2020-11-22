@@ -25,6 +25,7 @@ childPID = R0;
 
 // ---- If no space for new Process, (limit is 16) ----------------  
 if(childPID == -1) then
+    print("ForkExit!");
     alias physicalAddrRetVal R3;
     physicalAddrRetVal = [parentPTBR + 2 * (userSP-1)/512] * 512 + ((userSP-1)%512);
     [physicalAddrRetVal] = -1;

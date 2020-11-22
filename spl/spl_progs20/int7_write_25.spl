@@ -1,0 +1,401 @@
+// //------------- WRITE SYSCALL ------------------------------------------------------------------------------
+// // assig: Kernel Mode Switch
+// [70*512 + 511] = [70*512 + 511] + 1; 
+
+// //---------- Set the Mode Flag for WRITE = 5 ------------------------------ 
+// [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 5;
+
+// // Store UserSp in a Variable
+// alias userSP R2;
+// userSP = SP;
+
+// //------------- Switch Stacks ----------------------------------------------------
+// [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
+// //Set SP to KTPR
+// SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]) * 16 + 11] * 512 -1;
+
+// // Get Arg1 == File Descriptor
+// alias fileDescriptor R4;
+// alias word R5;
+// fileDescriptor = [[PTBR + 2 * ((userSP-4)/512)]* 512 + (userSP-4)%512];
+// word = [[PTBR + 2 * ((userSP-3)/512)]*512 + ((userSP-3)%512)];
+
+// alias physicalAddrRetVal R6;
+// physicalAddrRetVal = ([PTBR + 2 * (userSP - 1)/ 512] * 512) + ((userSP - 1) % 512);
+
+// alias processEntry R10;
+// processEntry = PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16;
+
+// if (fileDescriptor != -2) then
+//     //-------- TERMINAL Write ---------------------------------------------
+//     //-------- Call Terminal Write Function in Device Manager --------
+//     // Call Device Manager Module, to invoke Terminal Write Function
+//     multipush(R2,R4,R5,R6,R10);
+//     // Args:
+//     // funNum, PID, word to Print
+//     R1 = 3;
+//     R2 = [SYSTEM_STATUS_TABLE + 1]; 
+//     R3 = word; 
+//     call MOD_4;
+//     multipop(R2,R4,R5,R6,R10);
+
+//     // Return 0, Success
+//     [physicalAddrRetVal] = 0;
+//     SP = userSP;
+//     [PROCESS_TABLE+ [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+// else
+//     //--------  File Write ---------------------------------------------
+//     // Validity of fileDescriptor
+//     if(fileDescriptor < 0 || fileDescriptor > 7) then
+//         //return -1
+//         [physicalAddrRetVal] = -1;
+//         [processEntry + 9] = 0;
+//         SP = userSP;
+//         ireturn;
+//     endif;
+
+//     // Get Per Process Resource Table Entry
+//     alias perProcessEntry R7;
+//     perProcessEntry = [processEntry + 11]*512 + RESOURCE_TABLE_OFFSET + fileDescriptor*2;
+
+//     // /* No file is open with this file descriptor. */
+//     // if Resource Id of perProcessTable Entry is not File OR Invalid
+//     if([perProcessEntry + 0] == -1 || [perProcessEntry + 0] != FILE) then
+//         //return -1
+//         [physicalAddrRetVal] = -1;
+//         [processEntry + 9] = 0;
+//         SP = userSP;
+//         ireturn; 
+//     endif;
+
+//     // Get Index of OpenFileTable Entry and Inode Table Entry 
+//     alias openFileTableIndex R8; 
+//     alias inodeindex R9;
+//     openFileTableIndex = [perProcessEntry + 1];
+//     inodeindex = [OPEN_FILE_TABLE + openFileTableIndex*4];
+
+//     // If the current user is not root and the current user does not own the file and
+//     // if the exclusive permission is set, return -3. 
+//     if([processEntry + 3] != 1 && [processEntry + 3] != [INODE_TABLE + 16*inodeindex + 3] && [INODE_TABLE + 16*inodeindex + 4] == EXCLUSIVE) then
+//         [physicalAddrRetVal] = -3;
+//         [processEntry + 9] = 0;
+//         SP = userSP;
+//         ireturn;
+//     endif;
+
+//     // VERIFY MULTIPUSHES
+
+//     // /* Lock the inode */
+//     // Calling Acquire_Inode() Resource Manager
+//     // Args:
+//     // funNum = 4, inodeTableIndex, PID
+//     multipush(R2,R4,R5,R6,R7,R8,R9,R10);
+//         R1 = 4;
+//         R2 = inodeindex;
+//         R3 = [SYSTEM_STATUS_TABLE + 1];
+//         call MOD_0;
+//     multipop(R2,R4,R5,R6,R7,R8,R9,R10);
+//     if(R0 == -1) then
+//         //return -1
+//         [physicalAddrRetVal] = -1;
+//         [processEntry + 9] = 0;
+//         SP = userSP;
+//         ireturn;
+//     endif;
+
+//     // Get LSEEK from OPEN FILE TABLE
+//     alias lseek_addr R11;
+//     lseek_addr = OPEN_FILE_TABLE + openFileTableIndex*4 + 2;
+
+//     // if LSEEK is at MAX_FILE_SIZE (2048)
+//     if([lseek_addr] == MAX_FILE_SIZE) then
+//         // Calling Release_Inode() Resource Manager otherwise
+//         // Args:
+//         // funNum = 5, inode Table Index, PID
+//         multipush(R2,R4,R5,R6,R7,R8,R9,R10,R11);
+//             R1 = RELEASE_INODE;
+//             R2 = inodeindex;
+//             R3 = [SYSTEM_STATUS_TABLE + 1];
+//             call RESOURCE_MANAGER;
+//         multipop(R2,R4,R5,R6,R7,R8,R9,R10,R11);
+//         //return -2, Max File Size reached
+//         [physicalAddrRetVal] = -2;
+//         [processEntry+ 9] = 0;
+//         SP = userSP;
+//         ireturn;
+//     endif;
+
+//     // if LSEEK is multiple of 512 and Lseek == size of file, then
+//     // New Block to be Allocated:
+//     if([lseek_addr]%512==0 && [lseek_addr] == [INODE_TABLE + inodeindex*4 + 2]) then
+//         // Calling Get Free Block from Memory Manager
+//         // Args: funNum(3), NIL
+//         multipush(R2,R4,R5,R6,R7,R8,R9,R10,R11);
+//         R1 = GET_FREE_BLOCK;
+//         call MEMORY_MANAGER;
+//         multipop(R2,R4,R5,R6,R7,R8,R9,R10,R11);
+//         if(R0 == -1) then
+//             // No free Block, release Inode and return -2
+//             // Calling Release_Inode() Resource Manager otherwise
+//             // Args:
+//             // funNum = 5, inode Table Index, PID
+//             multipush(R2,R4,R5,R6,R7,R8,R9,R10,R11);
+//                 R1 = RELEASE_INODE;
+//                 R2 = inodeindex;
+//                 R3 = [SYSTEM_STATUS_TABLE + 1];
+//                 call RESOURCE_MANAGER;
+//             multipop(R2,R4,R5,R6,R7,R8,R9,R10,R11);
+//             [physicalAddrRetVal] = -2;
+//             [processEntry + 9] = 0;
+//             SP = userSP;
+//             ireturn;
+//         endif;
+//         // Set the new disk block 
+//         // found in the corresponding (lseek / 512) disk block field in Inode table entry
+//         [INODE_TABLE + inodeindex*16 + 8 + ([lseek_addr]/512)] = R0;
+//     endif;
+
+//     // Find the disk block number and the position in the block 
+//     // from which input is to be written.
+//     alias block_index R12;
+//     alias offset R13;
+//     alias diskBlockNumber R14;   // Disk Block Number corresponding to the block index (which is the lseek's data block)
+//     block_index = [lseek_addr]/512;
+//     offset = [lseek_addr]%512;
+//     diskBlockNumber = [INODE_TABLE + inodeindex*16 + 8 + block_index];
+    
+//     // Call Buffered_Write() Function in File Manager,
+//     // this will write the word to the diskBlockNumber at offset after loading into the Buffer
+//     multipush(R2,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14);
+//     R1 = BUFFERED_WRITE;
+//     R3 = offset;
+//     R2 = diskBlockNumber;
+//     R4 = word;
+//     call FILE_MANAGER;
+//     multipop(R2,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14);
+
+//     // if lseek == filesize,
+//     // increment filesize in inode table and root file for this file
+//     if([lseek_addr] == [INODE_TABLE + inodeindex*16 + 2]) then
+//         [INODE_TABLE + inodeindex*16 + 2] = [INODE_TABLE + inodeindex*16 + 2] + 1;
+//         [ROOT_FILE + inodeindex*8 + 1] = [ROOT_FILE + inodeindex*8 + 1] + 1;
+//     endif;
+
+//     // Incr LSEEK
+//     [lseek_addr] = [lseek_addr] + 1;
+
+//     // Calling Release_Inode() Resource Manager and returning 
+//     // Args:
+//     // funNum = 5, inode Table Index, PID
+//     multipush(R2,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14);
+//         R1 = RELEASE_INODE;
+//         R2 = inodeindex;
+//         R3 = [SYSTEM_STATUS_TABLE + 1];
+//         call RESOURCE_MANAGER;
+//     multipop(R2,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14);
+//     [physicalAddrRetVal] = 0;
+//     [processEntry + 9] = 0;
+//     SP = userSP;
+//     ireturn;
+
+// endif;
+
+// SP = userSP;
+// [processEntry + 9] = 0;
+
+// ireturn;
+
+// WRITE SYSTEM CALL
+
+// Arguments: File Descriptor(Integer) and the word to be written
+// Return Value:
+//  0	Success
+// -1	File Descriptor given is invalid
+// -2	No disk space / File Full
+// -3	Permission denied
+
+
+alias processEntry R15;
+processEntry = PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16;
+
+//---------- Set the Mode Flag for WRITE = 5 ------------------------------ 
+[processEntry + 9] = 5;
+
+//------------ Switch Stacks ----------------------------------------------------
+
+alias userSP R5;
+userSP = SP;
+[processEntry + 13] = SP;
+SP = [processEntry + 11] * 512 - 1;
+
+alias fileDesc R6;
+fileDesc = [([PTBR + 2*((userSP-4)/512)]*512) + ((userSP-4)%512)];
+
+// if fileDescriptor is terminal(=-1) 
+// extract arg 2 from userSP - 3, print it, store 0(success) return value at userSP - 1
+
+if (fileDesc == -2) then
+    alias word R7;
+	word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+
+    //invoke Terminal Write function
+    R1 = TERMINAL_WRITE;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = word;
+    multipush(R7, R6, R5, R15);
+    call DEVICE_MANAGER;
+    multipop(R7, R6, R5, R15);
+    //print [SYSTEM_STATUS_TABLE+1];
+	[([PTBR + 2*((userSP-1)/512)]*512) + ((userSP-1)%512)] = 0;
+    goto end;
+
+else
+
+    //If file descriptor (not in range 0 to 7)  is invalid, return -1. 
+    if (fileDesc < 0 || fileDesc > 7) then
+        [([PTBR + 2*((userSP-1)/512)]*512) + ((userSP-1)%512)] = -1;
+        goto end;
+    endif;
+
+    alias word R7;
+    word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+
+    alias resourceTableEntry R8;
+    resourceTableEntry = [processEntry+11]*512 + RESOURCE_TABLE_OFFSET + 2*fileDesc;
+
+    // resource identifier field Resource Table entry is not file, return -1
+    if( [resourceTableEntry] != FILE ) then
+        [([PTBR + 2*((userSP-1)/512)]*512) + ((userSP-1)%512)] = -1;
+        goto end;
+    endif ;
+
+    // Get the index of the Open File Table entry from the Per Process Resource Table entry.
+    alias openFileTableEntry R9;
+    openFileTableEntry = OPEN_FILE_TABLE + 4*[resourceTableEntry + 1];
+
+    // Get the index of the Inode Table entry from the Open File Table entry. 
+    alias inodeIndex R10;
+    inodeIndex = [openFileTableEntry];
+
+    alias inodeEntry R11;
+    inodeEntry = INODE_TABLE +16*inodeIndex;
+
+    if([inodeEntry + 4] == EXCLUSIVE) then
+        if( [processEntry + 3] != 1 && [processEntry + 3] != [inodeEntry + 3]) then
+            // user has no permission to delete file, return -1
+            [([PTBR + 2*((userSP-1)/512)]*512) + ((userSP-1)%512)] = -3;
+            goto end;
+        endif ;
+    endif;
+    
+    // lock file
+    // CALL ACQUIRE_INODE, RESOURCE MANAGER 0
+    R1 = ACQUIRE_INODE;
+    R2 = inodeIndex;
+    R3 = [SYSTEM_STATUS_TABLE+1];
+    multipush(R5, R6, R7, R8, R9, R10, R11, R15);
+    call RESOURCE_MANAGER;
+    multipop(R5, R6, R7, R8, R9, R10, R11, R15);
+
+    //locking fails
+    if(R0 == -1) then
+        [([PTBR + 2*((userSP-1)/512)]*512) + ((userSP-1)%512)] = -1;
+        goto end;
+    endif;
+
+    alias lseek R12;
+    lseek = [openFileTableEntry + 2];
+
+    // If lseek position is same as the MAX_FILE_SIZE, release_inode() and return -2.  ( Maximum file size of 2048 reached )
+    if(lseek == MAX_FILE_SIZE) then
+        // release lock on file
+        // call RELEASE_INODE, RESOURCE MANAGER 
+        R1 = RELEASE_INODE	;
+        R2 = inodeIndex;
+        R3 = [SYSTEM_STATUS_TABLE+1];
+        multipush(R5, R15);
+        call RESOURCE_MANAGER;
+        multipop(R5, R15);
+        [([PTBR + 2*((userSP-1)/512)]*512) + ((userSP-1)%512)] = -2;
+        goto end;
+    endif;
+
+    // If the Lseek position is a multiple of 512 and the same as File size in the inode table (New block to be allocated ) 
+    if(lseek%512 == 0 && lseek == [inodeEntry + 2]) then
+
+        // Get a free disk block by calling the get_free_block() function in the Memory Manager module.
+        R1 = GET_FREE_BLOCK	;
+        multipush(R5, R6, R7, R8, R9, R10, R11, R12);
+        call  MEMORY_MANAGER;
+        multipop(R5, R6, R7, R8, R9, R10, R11, R12);
+
+        // If no free disk block is found release_inode() and return -2. 
+        if(R0 == -1) then
+            // release lock on file
+            // call RELEASE_INODE, RESOURCE MANAGER 
+            R1 = RELEASE_INODE	;
+            R2 = inodeIndex;
+            R3 = [SYSTEM_STATUS_TABLE+1];
+            multipush(R5, R15);
+            call RESOURCE_MANAGER;
+            multipop(R5, R15);
+            [([PTBR + 2*((userSP-1)/512)]*512) + ((userSP-1)%512)] = -2;
+            goto end;
+        endif;
+
+        // Set the new disk block found in the corresponding (lseek / 512) disk block field  in the Inode table entry
+        [inodeEntry + 8 + lseek/512] = R0;
+
+    endif;
+
+    // Find the disk block number and the position in the block from which input is to be written.
+
+    // Get the block index from lseek position
+    alias diskBlockIndex R0; //only needed to get disk block , hence in R10
+    diskBlockIndex = lseek/512;
+
+    // Get the disk block number corresponding to the block index from the Inode Table
+    alias diskBlockNumber R13;
+    diskBlockNumber = [inodeEntry + 8 + diskBlockIndex];
+
+    //Get the offset value from lseek position
+    alias offset R14;
+    offset = lseek%512;
+
+    // Write the word to the File Buffer
+    //buffered_write() function in File Manager module
+    R1 = BUFFERED_WRITE;
+    R2 = diskBlockNumber;
+    R3 = offset;
+    R4 = word;
+    multipush(R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15);
+    call FILE_MANAGER;
+    multipop(R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15);
+
+    // If Lseek equals file size, increment file size in the inode table entry and also in the memory copy of the root file.
+    if(lseek == [inodeEntry + 2]) then
+        [inodeEntry + 2] = [inodeEntry + 2] + 1;
+        [ROOT_FILE + 8*inodeIndex + 1] = [ROOT_FILE + 8*inodeIndex + 1] + 1;
+    endif;
+
+    // Increment the Lseek position in the Open File Table entry.
+    [openFileTableEntry + 2] = [openFileTableEntry + 2] + 1;
+
+    // Release the Lock on the File
+    // call RELEASE_INODE, RESOURCE MANAGER 
+    R1 = RELEASE_INODE	;
+    R2 = inodeIndex;
+    R3 = [SYSTEM_STATUS_TABLE+1];
+    multipush(R5, R15);
+    call RESOURCE_MANAGER;
+    multipop(R5, R15);
+
+    [([PTBR + 2*((userSP-1)/512)]*512) + ((userSP-1)%512)] = 0;
+    goto end;
+
+endif;
+
+end : 
+SP = userSP;
+[processEntry + 9] = 0;
+ireturn;

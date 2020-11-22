@@ -25,7 +25,7 @@ perProcessEntry = [processTableEntry+ 11]*512 + RESOURCE_TABLE_OFFSET;
 // Args:
 // 1. filename
 // returns:
-// fd : file descriptor
+// fd : file descriptor (per process resource table index)
 // -1 : File not found or file is not a data or root file
 // -2 : System has reached its limit of open files
 // -3 : Process has reached its limit of resources

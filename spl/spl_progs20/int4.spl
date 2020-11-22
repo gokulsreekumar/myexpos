@@ -111,8 +111,7 @@ if( SysCallNum == 4) then
     [processTableEntry + 9] = 4;
 
     //---- GET ARGS -----------
-    // filename
-    // done above
+    // filename (done above)
 
     //---- Find Index of File in INODE TABLE --------
     alias i R4;
@@ -181,7 +180,6 @@ if( SysCallNum == 4) then
         ireturn;  
     endif;
 
-    // VERIFY !!!!!!!!!!!!!
     alias cnt R6;
     cnt = 8;
     // ----- For each Disk Block allocated (being used (not -1)) to the file do: -----------------------------------
