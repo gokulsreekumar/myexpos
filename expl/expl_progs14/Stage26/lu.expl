@@ -1,0 +1,17 @@
+int main()
+{
+decl
+	int i, tmp, ret;
+enddecl
+begin
+	i = 0;
+	while(i < 16) do
+		ret = exposcall("Getuname", i);
+		if(ret != 1) then
+        	tmp = exposcall("Write", -2, ret);
+		endif;
+	i = i + 1;
+	endwhile;
+return 0;
+end
+}

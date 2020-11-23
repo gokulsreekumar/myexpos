@@ -1,39 +1,46 @@
 alias functionNum R1;
 
-// ----- Get Free Page (funNum = 1) -----
-if(functionNum == 1) then
-    // WAIT_MEM_COUNT (3) incr
+//----- Get Free Page (funNum = 1) -----
+// Returns the page number of a free page
+// Called by fork and exec system calls. Also called by exception handler on page fault.
+
+if( functionNum == 1 ) then
+
+    //Increment WAIT_MEM_COUNT in system status table
     [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
 
-    // when mem_free_count==0, implies when FULL, BUSY WAIT
-    while([SYSTEM_STATUS_TABLE + 2] == 0) do
+    //While memory is full (MEM_FREE_COUNT will be 0)---- BUSY LOOP
+    while( [SYSTEM_STATUS_TABLE + 2] == 0) do
         [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 4] = WAIT_MEM;
-        // calling Scheduler
-		multipush(R1,R2);
-		call MOD_5;
-		multipop(R1,R2);
-    endwhile;
-    // wait_mem_count and mem_free_count
-    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] - 1;
-	[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+        //call module 5
+        multipush(R1);
+        call SCHEDULER;
+        multipop(R1);
+    endwhile ;
 
-    
-    // assig: Max Mem Count
-    if([70*512 + 510] < (128 -[SYSTEM_STATUS_TABLE + 2])) then
-        [70*512 + 510] = (128 -[SYSTEM_STATUS_TABLE + 2]);
+    //Decrement MEM_FREE_COUNT & WAIT_MEM_COUNT in system status table
+    [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] - 1;
+
+    //max mem usage
+    if (128 - [SYSTEM_STATUS_TABLE + 2] > [70*512 + 510] ) then
+        [70*512 + 510] = 128 - [SYSTEM_STATUS_TABLE + 2];
     endif;
 
+    //Find a free page using memory free list
+    alias pageIdx R2;
+    pageIdx = 0;
+    while( pageIdx < 128 ) do
+        if( [MEMORY_FREE_LIST + pageIdx] == 0 ) then
+            R0 = pageIdx;
+            break;
+        endif ;
+        pageIdx = pageIdx + 1;
+    endwhile ;
 
-    // find free page using mem free list
-    alias freePage R5;
-	freePage = 0;
-	while([MEMORY_FREE_LIST + freePage] != 0) do
-		freePage = freePage + 1;
-	endwhile;
-	[MEMORY_FREE_LIST + freePage] = 1;
-    R0 = freePage;
-    // breakpoint;
-	return;
+    [MEMORY_FREE_LIST + pageIdx] = 1;
+    
+    return;
 endif;
 
 // ---- Release Page -----
