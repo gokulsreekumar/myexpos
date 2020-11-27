@@ -184,6 +184,7 @@ PTBR = PTBR + 20;
 [PTBR+8] = 67;
 [PTBR+9] = "0100";
 [PTBR+10] = 68;
+[PTBR+11] = "0100";
 
 // Stack
 [PTBR+16] = 78;
@@ -329,12 +330,5 @@ endwhile;
 // wait_mem_cnt = 0, mem_free_count = initial free pool (127-82=45)
 [SYSTEM_STATUS_TABLE + 2] = 47;
 [SYSTEM_STATUS_TABLE + 3] = 0;
-
-
-// Counts 
-[70*512 + 508] = 0; // Disc Access
-[70*512 + 509] = 0; // Context Switches
-[70*512 + 510] = (128-45); // Max Memory Usage
-[70*512 + 511] = 0; // Switch to Kernel Mode
 
 return;

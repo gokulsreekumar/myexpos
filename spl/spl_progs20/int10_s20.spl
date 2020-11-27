@@ -1,6 +1,4 @@
 // ------------- EXIT ---------------------------------------------
-// assig: Kernel Mode Switch cnt
-[70*512 + 511] = [70*512 + 511] + 1; 
 
 //----  Set MODE Flag and Switch Stack ------------------------
 [PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+9] = 10;
@@ -15,16 +13,6 @@ R1 = 3;
 R2 = [SYSTEM_STATUS_TABLE +  1];
 call MOD_1;
 multipop(R1, R2, R3);
-
-// // ------ LOGS ---------------------------------
-// // Disc Access Numbers:
-// print("DiscAccNos:"); print([70*512 + 508]);
-// // Context Switches Numbers:
-// print("CntxtSwitch:");print([70*512 + 509]);
-// // Max Mem Usage:
-// print("MaxMem:");print([70*512 + 510]);
-// // Kernel Switch Cnt:
-// print("KernelChngCnt:");print([70*512 + 511]);
 
 // No return, just call Scheduler
 call MOD_5;

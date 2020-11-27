@@ -163,7 +163,7 @@ if( SysCallNum == 4) then
 
 
     // Check FILE STATUS TABLE and see if File Open Count == -1
-    // Checkinf if there are any open instances of the File (if so then return -2 , /* File is open, cannot be deleted */)
+    // Checking if there are any open instances of the File (if so then return -2 , /* File is open, cannot be deleted */)
     if([FILE_STATUS_TABLE + i*4 + 1] != -1) then
         // Release the lock (calling release_inode() in Resource Manager)
         // args: funNum(5), inode_index, PID
@@ -189,7 +189,6 @@ if( SysCallNum == 4) then
         if ( DiskBlockNum != -1 ) then
             // If the disk block is loaded into a buffer, 
             // and the DIRTY BIT is set, Then Reset the DIRTY BIT. 
-
             // buffer number in BUFFER TABLE is given by (Disk Block Number % MAX_BUFFER)
             alias bufferNumber R7;
             bufferNumber = DiskBlockNum % MAX_BUFFER;

@@ -1,7 +1,4 @@
-// ------- SEM LOCK, SEM UNLOCK --------------------
-// assig: Kernel Mode Switch cnt
-[70*512 + 511] = [70*512 + 511] + 1;
-
+// ------- SEM LOCK, SEM UNLOCK ------------------------------------------------------------------------------------------------------//
 // ------  Extract Syscall Number from User stack (userSP - 5, will have it, as userSP-4 will have args for the Syscall) -------------
 alias SysCallNum R1;
 alias userSP R2;

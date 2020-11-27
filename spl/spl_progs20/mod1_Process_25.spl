@@ -3,8 +3,6 @@ alias PID R2;
 
 alias processEntry R7;
 processEntry = PROCESS_TABLE + PID*16;
-// print("mod1:");
-// print(functionNum);
 // ----- Get PCB Entry (funNum = 1) -----------
 if(functionNum == 1) then
     alias cnt R10;

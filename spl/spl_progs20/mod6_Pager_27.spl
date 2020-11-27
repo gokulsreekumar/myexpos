@@ -1,0 +1,249 @@
+// ------------------------------------------ PAGER MODULE ---------------------------------------------------------------------- //
+
+// Function_Number	Function_Name	Arguments	Return Value
+// SWAP_OUT = 1	    Swap Out	    PID	        NIL
+// SWAP_IN = 2	    Swap In	        PID	        NIL
+
+alias functionNum R1;
+alias PID R2;
+alias processEntry1 R7;
+
+if( functionNum == SWAP_OUT ) then
+    // Args: PID
+    // ----- Find a process to SWAP OUT -------------------------------------------------------------------------
+    // other than the IDLE(0), INIT(1) or SHELL(2) (Need Not Check Swapper Daemon, Why?)
+    // Procedure:
+    // Find a non-swapped process that is in the (WAIT_PROCESS) state. 
+    // If there are no non-swapped processes in the WAIT_PROCESS state, find a non-swapped process in the (WAIT_SEMAPHORE) state.
+	// If there are no non-swapped processes in the (WAIT_PROCESS) and (WAIT_SEMAPHORE) state, 
+    //        find process with the highest TICK which is not running, terminated, allocated or swapped.
+
+    alias pid R4;
+    pid = 3;
+    while ( pid < MAX_PROC_NUM ) do
+        processEntry1 = PROCESS_TABLE + pid*16;
+        if( [processEntry1 + 6] == 0  && [processEntry1 + 4] == WAIT_PROCESS ) then
+            break;
+        endif;       
+        pid = pid + 1;
+    endwhile;
+
+    if( pid == MAX_PROC_NUM ) then
+        pid = 3;
+        while ( pid < MAX_PROC_NUM ) do
+            processEntry1 = PROCESS_TABLE + pid*16;
+            if( [processEntry1 + 6] == 0  && [processEntry1 + 4] == WAIT_SEMAPHORE) then
+                break;
+            endif;       
+            pid = pid + 1;
+        endwhile;
+    endif;
+
+    // NO Non Swapped Process in both WAIT_PROCESS and WAIT_SEMAPHORE, then:
+    if( pid == MAX_PROC_NUM ) then
+        pid = 3;
+        alias max_tick_pid R8;
+        alias max_ticks R10;
+        max_tick_pid = -1;
+        max_ticks = -1;
+        while ( pid < MAX_PROC_NUM ) do
+            processEntry1 = PROCESS_TABLE + pid*16;
+            alias state R9;
+            state = processEntry1 + 4;
+            // process be Not running, terminated, allocated or swapped (SWAP FLAG = 0 => Not Swapped).
+            if( [state] != RUNNING && [state] != TERMINATED && [state] != ALLOCATED && [processEntry1 + 6] == 0 ) then
+                // Find Max TICK val
+                if([processEntry1] > max_ticks) then
+                    max_tick_pid = pid;
+                    max_ticks = [processEntry1];
+                endif;
+            endif;
+            pid = pid + 1;
+        endwhile;
+        if(max_tick_pid == -1) then
+            pid = -1;
+        else
+            pid = max_tick_pid;
+        endif;
+    endif;
+    // If no Process Exists Meeting Any Set of conditions Above:
+    if(pid == -1) then
+        // Set PAGING_STATUS to 0 (Not Swapping)
+        [SYSTEM_STATUS_TABLE + 5] = 0;
+        return;
+    endif;
+
+    // If yes, then pid>2, pid = req. Process's PID to be SWAPPED OUT
+
+    // Process Table, Page Table, Disk Map Table for Selected Process
+    alias processEntry R5;
+    alias pageTableEntry R10;
+    alias diskMapEntry R11;
+    processEntry = PROCESS_TABLE + pid*16;
+    pageTableEntry = PAGE_TABLE_BASE + pid*20;
+    diskMapEntry = DISK_MAP_TABLE + pid*10;
+
+    // --- RESET the TICK field of the selected Process ---------
+    [processEntry] = 0;
+
+    // Call the release_page() function in the Memory Manager module 
+    // to deallocate the each VALID CODE pages of the process.
+    alias i R12;
+    i = 4;
+    while(i < 20) do
+        if( [pageTableEntry + i] != -1) then
+            if( i >= 8 && i < 16 ) then
+                // Code Pages
+                goto Release_Page;
+            endif;
+            if( i==4 || i==6 ) then
+                // Heap Pages (NOT Shared)
+                if( [MEMORY_FREE_LIST + [pageTableEntry + i]] == 1 ) then
+                    goto Swap_And_Store;
+                endif;
+            endif;
+            if (i == 16 || i==18 ) then
+                // Stack Pages
+                goto Swap_And_Store;
+            endif;
+        Swap_And_Store:
+            multipush(R4,R5,R10,R11,R12);
+                R1 = GET_SWAP_BLOCK;
+                call MOD_2;
+            multipop(R4,R5,R10,R11,R12);
+
+            // R0 will have Block Number
+            // Store Block Number in DISK MAP TABLE
+            [diskMapEntry + i/2] = R0;
+
+            // Calling Disk Store Function
+            // Args: Page Number and Block Number
+            multipush(R4,R5,R10,R11,R12);
+                R1 = DISK_STORE;
+                R2 = PID; 
+                R3 = [pageTableEntry + i];
+                R4 = R0;
+            multipop(R4,R5,R10,R11,R12);
+        Release_Page:
+            // calling release_page(), Memory Manager Module
+            // args: funNum, Page to Release
+            multipush(R4,R5,R10,R11,R12);
+                R1 = RELEASE_PAGE;
+                R2 = [pageTableEntry + i];
+                call MOD_2;
+            multipop(R4,R5,R10,R11,R12);
+
+            // Invalidate the Page table entry correpsonding to the code pages
+            [pageTableEntry + i] = -1;
+            [pageTableEntry + i + 1] = "0000";
+        endif;
+        i = i + 2;
+    endwhile;
+
+    // Set SWAP FLAG to 1
+    [processEntry + 6] = 1;
+
+    // Incr. SWAP_COUNT in SYSTEM_STATUS_TABLE
+    [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] + 1;
+
+    // RESET PAGING STATUS
+    [SYSTEM_STATUS_TABLE + 5] = 0;
+
+    return;
+
+endif;
+
+
+if( functionNum == SWAP_IN ) then
+    // Args: PID
+    alias pid R4;
+    pid = 3;
+    alias max_tick_pid R5;
+    alias max_ticks R6;
+    max_tick_pid = -1;
+    max_ticks = -1;
+    while ( pid < MAX_PROC_NUM ) do
+        processEntry1 = PROCESS_TABLE + pid*16;
+        // Process in READY and Swapped State
+        if( [processEntry1 + 4] != READY && [processEntry1 + 6] == 1 ) then
+            // Find Max TICK val
+            if([processEntry1] > max_ticks) then
+                max_tick_pid = pid;
+                max_ticks = [processEntry1];
+            endif;
+        endif;
+        pid = pid + 1;
+    endwhile;
+    if(max_tick_pid == -1) then
+        // Set PAGING_STATUS to 0 (Not Swapping)
+        [SYSTEM_STATUS_TABLE + 5] = 0;
+        return; 
+    endif;
+
+    pid = max_tick_pid;
+
+    // --- RESET the TICK field of the selected Process ---------
+    [PROCESS_TABLE + pid*16] = 0;
+
+    alias i R7;
+    i = 4;
+    alias pageTableEntry R9;
+    pageTableEntry = PAGE_TABLE_BASE + pid*20;
+    while(i < 20) do
+
+        alias block_number R8;
+        block_number = [DISK_MAP_TABLE + pid*10 + i/2];
+
+        // Valid Disk Map Entry
+        if([DISK_MAP_TABLE + pid*10 + i/2] != -1) then
+            // calling get_free_page() in Memeory Manager 
+            // args: funNum
+            multipush(R4,R7,R8);
+                R1 = GET_FREE_PAGE;
+                call MOD_2;
+            multipop(R4,R7,R8);
+            // R0 has free page
+            alias free_page_number R9;
+            free_page_number = R0;
+
+            // Calling Disk Load Function
+            // Args: Page Number and Block Number
+            multipush(R4,R7,R8);
+                R1 = DISK_LOAD;
+                R2 = PID; 
+                R3 = free_page_number;
+                R4 = block_number;
+            multipop(R4,R7,R8);
+
+            // Free the SWAP_BLOCK  
+            // Calling Release Block
+            multipush(R4,R7,R8);
+                R1 = RELEASE_BLOCK;
+                R2 = block_number; 
+            multipop(R4,R7,R8);
+
+            [pageTableEntry + i] = free_page_number;
+            [pageTableEntry + i + 1] = "0110";
+
+            // Invalidate the DISK MAP ENTRY 
+            [DISK_MAP_TABLE + pid*10 + i/2] = -1;
+
+        endif;
+        if( i == 6 ) then
+            i = 14;
+        endif;
+        i = i + 2;
+    endwhile;
+
+    // Set SWAP FLAG to 0
+    [PROCESS_TABLE + pid*16 + 6] = 0;
+
+    // Incr. SWAP_COUNT in SYSTEM_STATUS_TABLE
+    [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] - 1;
+
+    // RESET PAGING STATUS
+    [SYSTEM_STATUS_TABLE + 5] = 0;
+
+    return;
+
+endif;

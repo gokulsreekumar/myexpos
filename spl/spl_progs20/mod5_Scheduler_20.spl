@@ -25,11 +25,11 @@ if(count == 17) then
 	newPID = 0;
 endif;
 
-// Number of Context Switch
-if(currentPID != newPID) then
-    // Context switch count
-    [70*512 + 509] = [70*512 + 509] + 1;
-endif;
+// // Number of Context Switch
+// if(currentPID != newPID) then
+//     // Context switch count
+//     [70*512 + 509] = [70*512 + 509] + 1;
+// endif;
 
 
 alias new_process_table R3;

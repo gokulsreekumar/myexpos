@@ -1,8 +1,4 @@
-// assig: Kernel Mode Switch cnt
-[70*512 + 511] = [70*512 + 511] + 1; 
-
-
-breakpoint;
+// -------- EXCEPTION HANDLER ----------------------------------------------------------------------------------------------- //
 // ------ Switch Stack and Mode (EXCEPTION HANDLER) -------------------
 [PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+9]=-1; 
 [PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+13]=SP;

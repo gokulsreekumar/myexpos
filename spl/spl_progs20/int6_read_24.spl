@@ -1,6 +1,5 @@
-// assig: Kernel Mode Switch cnt
-[70*512 + 511] = [70*512 + 511] + 1;
 
+//-------------------------------------- READ SYSCALL ----------------------------------- //
 // MODE FLAG = Syscall Num => 7
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 7;
 

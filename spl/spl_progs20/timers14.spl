@@ -1,5 +1,5 @@
 // assig: Kernel Mode Switch
-[70*512 + 511] = [70*512 + 511] + 1; 
+// [70*512 + 511] = [70*512 + 511] + 1; 
 
 // SWITCH STACKS: USER TO KERNEL and Backup (Hardware Interrupt)
 [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;

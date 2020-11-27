@@ -18,10 +18,10 @@ if(functionNum == 1) then
 	[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
 
     
-    // assig: Max Mem Count
-    if([70*512 + 510] < (128 -[SYSTEM_STATUS_TABLE + 2])) then
-        [70*512 + 510] = (128 -[SYSTEM_STATUS_TABLE + 2]);
-    endif;
+    // // assig: Max Mem Count
+    // if([70*512 + 510] < (128 -[SYSTEM_STATUS_TABLE + 2])) then
+    //     [70*512 + 510] = (128 -[SYSTEM_STATUS_TABLE + 2]);
+    // endif;
 
 
     // find free page using mem free list

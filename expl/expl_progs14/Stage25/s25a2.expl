@@ -23,10 +23,6 @@ begin
         tmp = exposcall("Read", fileDesc, word);
         tmp = exposcall("Write",-2,word);
         tmp = exposcall("Seek",fileDesc, -2);
-        // cnt = cnt + 1;
-        // if(cnt == 514)then
-        //     break;
-        // endif;
         if(tmp == -2) then
             break;
         endif;
