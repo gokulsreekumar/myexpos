@@ -28,12 +28,19 @@ else
     newPID = currentPID + 1;
     alias count R3;
     count = 1;
-    while((count <= 16) && ([PROCESS_TABLE + (newPID*16) + 4] != READY) && ([PROCESS_TABLE + (newPID*16) + 4] != CREATED)) do
-        newPID = ((newPID + 1)%16);
-        count = count + 1;
+    while(count <= 16) do
+        if( newPID == SWAPPER_DAEMON ) then
+            goto cont;
+        endif;
+        if(([PROCESS_TABLE + (newPID*16) + 4] == READY || [PROCESS_TABLE + (newPID*16) + 4] == CREATED) && [PROCESS_TABLE + (newPID*16) + 6] == 0) then
+            break;
+        endif;
+        cont:
+            newPID = ((newPID + 1)%16);
+            count = count + 1;
     endwhile;
 
-    if(count == 17) then
+    if(count >= 17) then
         newPID = 0;
     endif;
 endif;

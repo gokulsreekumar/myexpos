@@ -17,7 +17,7 @@ if( functionNum == SWAP_OUT ) then
     // If there are no non-swapped processes in the WAIT_PROCESS state, find a non-swapped process in the (WAIT_SEMAPHORE) state.
 	// If there are no non-swapped processes in the (WAIT_PROCESS) and (WAIT_SEMAPHORE) state, 
     //        find process with the highest TICK which is not running, terminated, allocated or swapped.
-
+    print("SwapOutStart");
     alias pid R4;
     pid = 3;
     while ( pid < MAX_PROC_NUM ) do
@@ -75,6 +75,7 @@ if( functionNum == SWAP_OUT ) then
 
     // If yes, then pid>2, pid = req. Process's PID to be SWAPPED OUT
 
+    print("swapOutPID:"); print(pid);
     // Process Table, Page Table, Disk Map Table for Selected Process
     alias processEntry R5;
     alias pageTableEntry R10;
@@ -104,6 +105,7 @@ if( functionNum == SWAP_OUT ) then
             endif;
             if (i == 16 || i==18 ) then
                 // Stack Pages
+                // print();
                 goto Swap_And_Store;
             endif;
         Swap_And_Store:
@@ -149,12 +151,16 @@ if( functionNum == SWAP_OUT ) then
     // RESET PAGING STATUS
     [SYSTEM_STATUS_TABLE + 5] = 0;
 
+    print("SwapOutEnd");
+
     return;
 
 endif;
 
 
 if( functionNum == SWAP_IN ) then
+    print("SwapInStart");
+
     // Args: PID
     alias pid R4;
     pid = 3;
@@ -165,7 +171,7 @@ if( functionNum == SWAP_IN ) then
     while ( pid < MAX_PROC_NUM ) do
         processEntry1 = PROCESS_TABLE + pid*16;
         // Process in READY and Swapped State
-        if( [processEntry1 + 4] != READY && [processEntry1 + 6] == 1 ) then
+        if( [processEntry1 + 4] == READY && [processEntry1 + 6] == 1 ) then
             // Find Max TICK val
             if([processEntry1] > max_ticks) then
                 max_tick_pid = pid;
@@ -174,6 +180,7 @@ if( functionNum == SWAP_IN ) then
         endif;
         pid = pid + 1;
     endwhile;
+
     if(max_tick_pid == -1) then
         // Set PAGING_STATUS to 0 (Not Swapping)
         [SYSTEM_STATUS_TABLE + 5] = 0;
@@ -181,7 +188,8 @@ if( functionNum == SWAP_IN ) then
     endif;
 
     pid = max_tick_pid;
-
+    print("SwapInHere:"); print(pid);
+   
     // --- RESET the TICK field of the selected Process ---------
     [PROCESS_TABLE + pid*16] = 0;
 
@@ -208,12 +216,14 @@ if( functionNum == SWAP_IN ) then
 
             // Calling Disk Load Function
             // Args: Page Number and Block Number
-            multipush(R4,R7,R8);
+            // multipush(R4,R7,R8);
+                backup;
                 R1 = DISK_LOAD;
                 R2 = PID; 
                 R3 = free_page_number;
                 R4 = block_number;
-            multipop(R4,R7,R8);
+                restore;
+            // multipop(R4,R7,R8);
 
             // Free the SWAP_BLOCK  
             // Calling Release Block
@@ -243,6 +253,7 @@ if( functionNum == SWAP_IN ) then
 
     // RESET PAGING STATUS
     [SYSTEM_STATUS_TABLE + 5] = 0;
+    print("SwapInEnd");
 
     return;
 

@@ -1,18 +1,18 @@
-load --os ../spl/spl_progs20/os_startup_26.xsm
+load --os ../spl/spl_progs20/os_startup_27.xsm
 load --init ../expl/expl_progs14/Stage26/login.xsm
 load --shell ../expl/expl_progs14/Stage26/shell3.xsm
-load --module 7 ../spl/spl_progs20/mod7_Boot_26.xsm
+load --module 7 ../spl/spl_progs20/mod7_Boot_27.xsm
 load --module 6 ../spl/spl_progs20/mod6_Pager_27.xsm
-load --module 5 ../spl/spl_progs20/mod5_Scheduler_20.xsm
+load --module 5 ../spl/spl_progs20/mod5_Scheduler_27.xsm
 load --module 4 ../spl/spl_progs20/mod4_Device_23.xsm
 load --module 3 ../spl/spl_progs20/mod3_FileManager_25.xsm
-load --module 2 ../spl/spl_progs20/mod2_Memory_25.xsm
+load --module 2 ../spl/spl_progs20/mod2_Memory_27.xsm
 load --module 1 ../spl/spl_progs20/mod1_Process_25.xsm
 load --module 0 ../spl/spl_progs20/mod0_Resource_24.xsm
 load --int=10 ../spl/spl_progs20/int10_s20.xsm
 load --exhandler ../spl/spl_progs20/exception_handler.xsm
 load --library ../expl/library.lib
-load --int=timer ../spl/spl_progs20/timers14.xsm
+load --int=timer ../spl/spl_progs20/timer_int_27.xsm
 load --int=17 ../spl/spl_progs20/int17_Login.xsm
 load --int=16 ../spl/spl_progs20/int16_Users.xsm
 load --int=15 ../spl/spl_progs20/int15_Shutdown_26.xsm
