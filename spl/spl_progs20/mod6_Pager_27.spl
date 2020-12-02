@@ -1,260 +1,498 @@
-// ------------------------------------------ PAGER MODULE ---------------------------------------------------------------------- //
+// // ------------------------------------------ PAGER MODULE ---------------------------------------------------------------------- //
 
-// Function_Number	Function_Name	Arguments	Return Value
-// SWAP_OUT = 1	    Swap Out	    PID	        NIL
-// SWAP_IN = 2	    Swap In	        PID	        NIL
+// // Function_Number	Function_Name	Arguments	Return Value
+// // SWAP_OUT = 1	    Swap Out	    PID	        NIL
+// // SWAP_IN = 2	    Swap In	        PID	        NIL
+
+// alias functionNum R1;
+// alias PID R2;
+// alias processEntry1 R7;
+
+// if( functionNum == SWAP_OUT ) then
+//     // Args: PID
+//     // ----- Find a process to SWAP OUT -------------------------------------------------------------------------
+//     // other than the IDLE(0), INIT(1) or SHELL(2) (Need Not Check Swapper Daemon, Why?)
+//     // Procedure:
+//     // Find a non-swapped process that is in the (WAIT_PROCESS) state. 
+//     // If there are no non-swapped processes in the WAIT_PROCESS state, find a non-swapped process in the (WAIT_SEMAPHORE) state.
+// 	// If there are no non-swapped processes in the (WAIT_PROCESS) and (WAIT_SEMAPHORE) state, 
+//     //        find process with the highest TICK which is not running, terminated, allocated or swapped.
+//     print("SwapOutStart");
+//     alias pid R4;
+//     pid = 3;
+//     while ( pid < MAX_PROC_NUM ) do
+//         processEntry1 = PROCESS_TABLE + pid*16;
+//         if( [processEntry1 + 6] == 0  && [processEntry1 + 4] == WAIT_PROCESS ) then
+//             break;
+//         endif;       
+//         pid = pid + 1;
+//     endwhile;
+
+//     if( pid == MAX_PROC_NUM ) then
+//         pid = 3;
+//         while ( pid < MAX_PROC_NUM ) do
+//             processEntry1 = PROCESS_TABLE + pid*16;
+//             if( [processEntry1 + 6] == 0  && [processEntry1 + 4] == WAIT_SEMAPHORE) then
+//                 break;
+//             endif;       
+//             pid = pid + 1;
+//         endwhile;
+//     endif;
+
+//     // NO Non Swapped Process in both WAIT_PROCESS and WAIT_SEMAPHORE, then:
+//     if( pid == MAX_PROC_NUM ) then
+//         pid = 3;
+//         alias max_tick_pid R8;
+//         alias max_ticks R10;
+//         max_tick_pid = -1;
+//         max_ticks = -1;
+//         while ( pid < MAX_PROC_NUM ) do
+//             processEntry1 = PROCESS_TABLE + pid*16;
+//             alias state R9;
+//             state = processEntry1 + 4;
+//             // process be Not running, terminated, allocated or swapped (SWAP FLAG = 0 => Not Swapped).
+//             if( [state] != RUNNING && [state] != TERMINATED && [state] != ALLOCATED && [processEntry1 + 6] == 0 ) then
+//                 // Find Max TICK val
+//                 if([processEntry1] > max_ticks) then
+//                     max_tick_pid = pid;
+//                     max_ticks = [processEntry1];
+//                 endif;
+//             endif;
+//             pid = pid + 1;
+//         endwhile;
+//         if(max_tick_pid == -1) then
+//             pid = -1;
+//         else
+//             pid = max_tick_pid;
+//         endif;
+//     endif;
+//     // If no Process Exists Meeting Any Set of conditions Above:
+//     if(pid == -1) then
+//         // Set PAGING_STATUS to 0 (Not Swapping)
+//         [SYSTEM_STATUS_TABLE + 5] = 0;
+//         return;
+//     endif;
+
+//     // If yes, then pid>2, pid = req. Process's PID to be SWAPPED OUT
+
+//     print("swapOutPID:"); print(pid);
+//     // Process Table, Page Table, Disk Map Table for Selected Process
+//     alias processEntry R5;
+//     alias pageTableEntry R10;
+//     alias diskMapEntry R11;
+//     processEntry = PROCESS_TABLE + pid*16;
+//     pageTableEntry = PAGE_TABLE_BASE + pid*20;
+//     diskMapEntry = DISK_MAP_TABLE + pid*10;
+
+//     // --- RESET the TICK field of the selected Process ---------
+//     [processEntry] = 0;
+
+//     // Call the release_page() function in the Memory Manager module 
+//     // to deallocate the each VALID CODE pages of the process.
+//     alias i R12;
+//     i = 4;
+//     while(i < 20) do
+//         if( [pageTableEntry + i] != -1) then
+//             if( i >= 8 && i < 16 ) then
+//                 // Code Pages
+//                 goto Release_Page;
+//             endif;
+//             if( i==4 || i==6 ) then
+//                 // Heap Pages (NOT Shared)
+//                 if( [MEMORY_FREE_LIST + [pageTableEntry + i]] == 1 ) then
+//                     goto Swap_And_Store;
+//                 endif;
+//             endif;
+//             if (i == 16 || i==18 ) then
+//                 // Stack Pages
+//                 // print();
+//                 goto Swap_And_Store;
+//             endif;
+//         Swap_And_Store:
+//             multipush(R4,R5,R10,R11,R12);
+//                 R1 = GET_SWAP_BLOCK;
+//                 call MOD_2;
+//             multipop(R4,R5,R10,R11,R12);
+
+//             // R0 will have Block Number
+//             // Store Block Number in DISK MAP TABLE
+//             [diskMapEntry + i/2] = R0;
+
+//             // Calling Disk Store Function
+//             // Args: Page Number and Block Number
+//             multipush(R4,R5,R10,R11,R12);
+//                 R1 = DISK_STORE;
+//                 R2 = PID; 
+//                 R3 = [pageTableEntry + i];
+//                 R4 = R0;
+//             multipop(R4,R5,R10,R11,R12);
+//         Release_Page:
+//             // calling release_page(), Memory Manager Module
+//             // args: funNum, Page to Release
+//             multipush(R4,R5,R10,R11,R12);
+//                 R1 = RELEASE_PAGE;
+//                 R2 = [pageTableEntry + i];
+//                 call MOD_2;
+//             multipop(R4,R5,R10,R11,R12);
+
+//             // Invalidate the Page table entry correpsonding to the code pages
+//             [pageTableEntry + i] = -1;
+//             [pageTableEntry + i + 1] = "0000";
+//         endif;
+//         i = i + 2;
+//     endwhile;
+
+//     // Set SWAP FLAG to 1
+//     [processEntry + 6] = 1;
+
+//     // Incr. SWAP_COUNT in SYSTEM_STATUS_TABLE
+//     [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] + 1;
+
+//     // RESET PAGING STATUS
+//     [SYSTEM_STATUS_TABLE + 5] = 0;
+
+//     print("SwapOutEnd");
+
+//     return;
+
+// endif;
+
+
+// if( functionNum == SWAP_IN ) then
+//     print("SwapInStart");
+
+//     // Args: PID
+//     alias pid R4;
+//     pid = 3;
+//     alias max_tick_pid R5;
+//     alias max_ticks R6;
+//     max_tick_pid = -1;
+//     max_ticks = -1;
+//     while ( pid < MAX_PROC_NUM ) do
+//         processEntry1 = PROCESS_TABLE + pid*16;
+//         // Process in READY and Swapped State
+//         if( [processEntry1 + 4] == READY && [processEntry1 + 6] == 1 ) then
+//             // Find Max TICK val
+//             if([processEntry1] > max_ticks) then
+//                 max_tick_pid = pid;
+//                 max_ticks = [processEntry1];
+//             endif;
+//         endif;
+//         pid = pid + 1;
+//     endwhile;
+
+//     if(max_tick_pid == -1) then
+//         // Set PAGING_STATUS to 0 (Not Swapping)
+//         [SYSTEM_STATUS_TABLE + 5] = 0;
+//         return; 
+//     endif;
+
+//     pid = max_tick_pid;
+//     print("SwapInHere:"); print(pid);
+   
+//     // --- RESET the TICK field of the selected Process ---------
+//     [PROCESS_TABLE + pid*16] = 0;
+
+//     alias i R7;
+//     i = 4;
+//     alias pageTableEntry R9;
+//     pageTableEntry = PAGE_TABLE_BASE + pid*20;
+//     while(i < 20) do
+
+//         alias block_number R8;
+//         block_number = [DISK_MAP_TABLE + pid*10 + i/2];
+
+//         // Valid Disk Map Entry
+//         if([DISK_MAP_TABLE + pid*10 + i/2] != -1) then
+//             // calling get_free_page() in Memeory Manager 
+//             // args: funNum
+//             multipush(R4,R7,R8);
+//                 R1 = GET_FREE_PAGE;
+//                 call MOD_2;
+//             multipop(R4,R7,R8);
+//             // R0 has free page
+//             alias free_page_number R9;
+//             free_page_number = R0;
+
+//             // Calling Disk Load Function
+//             // Args: Page Number and Block Number
+//             // multipush(R4,R7,R8);
+//                 backup;
+//                 R1 = DISK_LOAD;
+//                 R2 = PID; 
+//                 R3 = free_page_number;
+//                 R4 = block_number;
+//                 restore;
+//             // multipop(R4,R7,R8);
+
+//             // Free the SWAP_BLOCK  
+//             // Calling Release Block
+//             multipush(R4,R7,R8);
+//                 R1 = RELEASE_BLOCK;
+//                 R2 = block_number; 
+//             multipop(R4,R7,R8);
+
+//             [pageTableEntry + i] = free_page_number;
+//             [pageTableEntry + i + 1] = "0110";
+
+//             // Invalidate the DISK MAP ENTRY 
+//             [DISK_MAP_TABLE + pid*10 + i/2] = -1;
+
+//         endif;
+//         if( i == 6 ) then
+//             i = 14;
+//         endif;
+//         i = i + 2;
+//     endwhile;
+
+//     // Set SWAP FLAG to 0
+//     [PROCESS_TABLE + pid*16 + 6] = 0;
+
+//     // Incr. SWAP_COUNT in SYSTEM_STATUS_TABLE
+//     [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] - 1;
+
+//     // RESET PAGING STATUS
+//     [SYSTEM_STATUS_TABLE + 5] = 0;
+//     print("SwapInEnd");
+
+//     return;
+
+// endif;
+
+// responsible for swapping in and out processes
+
+// Functions :
+// 1 - SWAP_OUT
+// 2 - SWAP_IN
 
 alias functionNum R1;
-alias PID R2;
-alias processEntry1 R7;
 
-if( functionNum == SWAP_OUT ) then
-    // Args: PID
-    // ----- Find a process to SWAP OUT -------------------------------------------------------------------------
-    // other than the IDLE(0), INIT(1) or SHELL(2) (Need Not Check Swapper Daemon, Why?)
-    // Procedure:
-    // Find a non-swapped process that is in the (WAIT_PROCESS) state. 
-    // If there are no non-swapped processes in the WAIT_PROCESS state, find a non-swapped process in the (WAIT_SEMAPHORE) state.
-	// If there are no non-swapped processes in the (WAIT_PROCESS) and (WAIT_SEMAPHORE) state, 
-    //        find process with the highest TICK which is not running, terminated, allocated or swapped.
-    print("SwapOutStart");
-    alias pid R4;
-    pid = 3;
-    while ( pid < MAX_PROC_NUM ) do
-        processEntry1 = PROCESS_TABLE + pid*16;
-        if( [processEntry1 + 6] == 0  && [processEntry1 + 4] == WAIT_PROCESS ) then
-            break;
-        endif;       
-        pid = pid + 1;
-    endwhile;
 
-    if( pid == MAX_PROC_NUM ) then
-        pid = 3;
-        while ( pid < MAX_PROC_NUM ) do
-            processEntry1 = PROCESS_TABLE + pid*16;
-            if( [processEntry1 + 6] == 0  && [processEntry1 + 4] == WAIT_SEMAPHORE) then
-                break;
-            endif;       
-            pid = pid + 1;
-        endwhile;
-    endif;
+// SWAP_OUT
+// Invoked when the physical memory is critically low
+// chooses a process to swap out, and free it's memory by moving it to the disk
+// PID of the currently running process is passed as an argument
+// Called by the timer interrupt
 
-    // NO Non Swapped Process in both WAIT_PROCESS and WAIT_SEMAPHORE, then:
-    if( pid == MAX_PROC_NUM ) then
-        pid = 3;
-        alias max_tick_pid R8;
-        alias max_ticks R10;
-        max_tick_pid = -1;
-        max_ticks = -1;
-        while ( pid < MAX_PROC_NUM ) do
-            processEntry1 = PROCESS_TABLE + pid*16;
-            alias state R9;
-            state = processEntry1 + 4;
-            // process be Not running, terminated, allocated or swapped (SWAP FLAG = 0 => Not Swapped).
-            if( [state] != RUNNING && [state] != TERMINATED && [state] != ALLOCATED && [processEntry1 + 6] == 0 ) then
-                // Find Max TICK val
-                if([processEntry1] > max_ticks) then
-                    max_tick_pid = pid;
-                    max_ticks = [processEntry1];
-                endif;
-            endif;
-            pid = pid + 1;
-        endwhile;
-        if(max_tick_pid == -1) then
-            pid = -1;
-        else
-            pid = max_tick_pid;
+if (functionNum == SWAP_OUT) then
+
+    // Choose a process to swap out(other than the IDLE, Shell or INIT)
+    // Loop through the Process Table
+    // find a non-swapped process that is in the WAIT_PROCESS, WAIT_SEMAPHORE state or if not found
+    // find process with the highest TICK which is not running, terminated, allocated or swapped
+
+    alias cnt R5;
+    alias swapPID R6;
+    swapPID = -1;
+
+    cnt = 3;
+    while( cnt <16 ) do
+        if([PROCESS_TABLE + cnt*16 + 6] == 0 && [PROCESS_TABLE + cnt*16 + 4] == WAIT_PROCESS)then
+            swapPID = cnt;
+            goto continue1;
         endif;
-    endif;
-    // If no Process Exists Meeting Any Set of conditions Above:
-    if(pid == -1) then
-        // Set PAGING_STATUS to 0 (Not Swapping)
+        cnt = cnt + 1;
+    endwhile ;
+
+    cnt = 3;
+    while( cnt <16 ) do
+        if([PROCESS_TABLE + cnt*16 + 6] == 0 && [PROCESS_TABLE + cnt*16 + 4] == WAIT_SEMAPHORE)then
+            swapPID = cnt;
+            goto continue1;
+        endif;
+        cnt = cnt + 1;
+    endwhile ;
+
+    alias state R7;
+    alias maxTick R8;
+    maxTick = -1;
+    cnt = 3;
+    while( cnt <16 ) do
+        state = [PROCESS_TABLE + cnt*16 + 4];
+        if([PROCESS_TABLE + cnt*16 + 6] == 0 &&  state!=RUNNING && state!=TERMINATED && state!=ALLOCATED )then
+            if([PROCESS_TABLE + cnt*16 ] > maxTick) then
+                maxTick = [PROCESS_TABLE + cnt*16 ];
+                swapPID = cnt;
+            endif;
+        endif;
+        cnt = cnt + 1;
+    endwhile ;
+
+    continue1 : 
+
+    // If no such process exists, set the PAGING_STATUS back to 0 and return
+    if(swapPID == -1) then
         [SYSTEM_STATUS_TABLE + 5] = 0;
         return;
     endif;
+    print "swapped pid"; print swapPID;
+    // Set the TICK field of the process table entry of the selected process to 0.
+    [PROCESS_TABLE + swapPID*16 ] = 0;
 
-    // If yes, then pid>2, pid = req. Process's PID to be SWAPPED OUT
+    alias ptbr R9;
+    ptbr = PAGE_TABLE_BASE + swapPID*20;
 
-    print("swapOutPID:"); print(pid);
-    // Process Table, Page Table, Disk Map Table for Selected Process
-    alias processEntry R5;
-    alias pageTableEntry R10;
-    alias diskMapEntry R11;
-    processEntry = PROCESS_TABLE + pid*16;
-    pageTableEntry = PAGE_TABLE_BASE + pid*20;
-    diskMapEntry = DISK_MAP_TABLE + pid*10;
-
-    // --- RESET the TICK field of the selected Process ---------
-    [processEntry] = 0;
-
-    // Call the release_page() function in the Memory Manager module 
-    // to deallocate the each VALID CODE pages of the process.
-    alias i R12;
-    i = 4;
-    while(i < 20) do
-        if( [pageTableEntry + i] != -1) then
-            if( i >= 8 && i < 16 ) then
-                // Code Pages
-                goto Release_Page;
+    // Call the release_page() and invalidate Page table entries   
+    cnt = 2;
+    while( cnt < 10 ) do
+        begin :
+        if ([ptbr+cnt*2] != -1) then
+            if(cnt >=4 && cnt <=7) then //code pages
+                goto releasePage;
             endif;
-            if( i==4 || i==6 ) then
-                // Heap Pages (NOT Shared)
-                if( [MEMORY_FREE_LIST + [pageTableEntry + i]] == 1 ) then
-                    goto Swap_And_Store;
+
+            if(cnt==2|| cnt==3) then //valid and non shared heap pages
+                if([MEMORY_FREE_LIST + [ptbr+cnt*2]] == 1)then  
+                    goto swap_free;
                 endif;
             endif;
-            if (i == 16 || i==18 ) then
-                // Stack Pages
-                // print();
-                goto Swap_And_Store;
+
+            if(cnt == 8 || cnt == 9)then
+                goto swap_free;
             endif;
-        Swap_And_Store:
-            multipush(R4,R5,R10,R11,R12);
+
+            swap_free :
+                // Get a free swap block by calling the get_swap_block() function in the Memory Manager module
                 R1 = GET_SWAP_BLOCK;
-                call MOD_2;
-            multipop(R4,R5,R10,R11,R12);
+                multipush(R5, R6, R7, R8, R9);
+                call MEMORY_MANAGER;
+                multipop(R5, R6, R7, R8, R9);
 
-            // R0 will have Block Number
-            // Store Block Number in DISK MAP TABLE
-            [diskMapEntry + i/2] = R0;
+                // Store the disk block number in the Disk Map Table entry of the process curresponding to the heap page
+                [DISK_MAP_TABLE + 10*swapPID + cnt] = R0;
 
-            // Calling Disk Store Function
-            // Args: Page Number and Block Number
-            multipush(R4,R5,R10,R11,R12);
+                // Use the disk_store() to write the heap page to the block found
                 R1 = DISK_STORE;
-                R2 = PID; 
-                R3 = [pageTableEntry + i];
+                R2 = [SYSTEM_STATUS_TABLE+1];
+                R3 = [ptbr+cnt*2];
                 R4 = R0;
-            multipop(R4,R5,R10,R11,R12);
-        Release_Page:
-            // calling release_page(), Memory Manager Module
-            // args: funNum, Page to Release
-            multipush(R4,R5,R10,R11,R12);
+                multipush(R5, R6, R7, R8, R9);
+                call DEVICE_MANAGER;
+                multipop(R5, R6, R7, R8, R9);
+
+            releasePage :
                 R1 = RELEASE_PAGE;
-                R2 = [pageTableEntry + i];
-                call MOD_2;
-            multipop(R4,R5,R10,R11,R12);
+                R2 = [ptbr + cnt*2];
+                multipush(R5, R6, R7, R8, R9);
+                call MEMORY_MANAGER;
+                multipop(R5, R6, R7, R8, R9);
 
-            // Invalidate the Page table entry correpsonding to the code pages
-            [pageTableEntry + i] = -1;
-            [pageTableEntry + i + 1] = "0000";
-        endif;
-        i = i + 2;
-    endwhile;
+                [ptbr + cnt*2] = -1;
+                [ptbr + cnt*2 + 1] = "0000";
+        endif;    
+        end :
+            cnt = cnt + 1;
+    endwhile ;
 
-    // Set SWAP FLAG to 1
-    [processEntry + 6] = 1;
+    // Set the SWAP_FLAG field in the process table entry of the process to 1
+    [PROCESS_TABLE + swapPID*16 + 6 ] = 1;
 
-    // Incr. SWAP_COUNT in SYSTEM_STATUS_TABLE
+    // In the System Status Table, increment the SWAP_COUNT and reset the PAGING_STATUS back to 0
     [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] + 1;
-
-    // RESET PAGING STATUS
     [SYSTEM_STATUS_TABLE + 5] = 0;
 
-    print("SwapOutEnd");
-
     return;
-
 endif;
 
 
-if( functionNum == SWAP_IN ) then
-    print("SwapInStart");
 
-    // Args: PID
-    alias pid R4;
-    pid = 3;
-    alias max_tick_pid R5;
-    alias max_ticks R6;
-    max_tick_pid = -1;
-    max_ticks = -1;
-    while ( pid < MAX_PROC_NUM ) do
-        processEntry1 = PROCESS_TABLE + pid*16;
-        // Process in READY and Swapped State
-        if( [processEntry1 + 4] == READY && [processEntry1 + 6] == 1 ) then
-            // Find Max TICK val
-            if([processEntry1] > max_ticks) then
-                max_tick_pid = pid;
-                max_ticks = [processEntry1];
+//----------------------------
+
+// SWAP_IN
+// Invoked when the physical memory is high enough that a process can be swapped in
+// If a suitable process is found, it is loaded back to the main memory
+// PID of the currently running process is passed as an argument
+// Called by timer interrupt
+
+if (functionNum == SWAP_IN) then
+    alias cnt R5;
+    alias maxTick R6;
+    alias swapPID R7;
+    swapPID = -1;
+    maxTick = -1;
+    cnt = 0;
+
+    // Loop through the Process Table and find the swapped process in the READY state with the highest TICK
+    while( cnt <16 ) do
+        if([PROCESS_TABLE + cnt*16 + 6] == 1 &&  [PROCESS_TABLE + cnt*16 + 4]==READY)then
+            if([PROCESS_TABLE + cnt*16 ] > maxTick) then
+                maxTick = [PROCESS_TABLE + cnt*16];
+                swapPID = cnt;
             endif;
         endif;
-        pid = pid + 1;
-    endwhile;
-
-    if(max_tick_pid == -1) then
-        // Set PAGING_STATUS to 0 (Not Swapping)
+        cnt = cnt + 1;
+    endwhile ;
+    // print "enter swapping";
+    // If there is no such process, reset the PAGING_STATUS field to 0 and Return
+    if(swapPID == -1) then
         [SYSTEM_STATUS_TABLE + 5] = 0;
-        return; 
+        return;
     endif;
+    // print "swapped in";
+    // print swapPID;
 
-    pid = max_tick_pid;
-    print("SwapInHere:"); print(pid);
-   
-    // --- RESET the TICK field of the selected Process ---------
-    [PROCESS_TABLE + pid*16] = 0;
+    // Set the TICK field of the process table entry of the selected process to 0
+    [PROCESS_TABLE + swapPID*16 ] = 0;
 
-    alias i R7;
-    i = 4;
-    alias pageTableEntry R9;
-    pageTableEntry = PAGE_TABLE_BASE + pid*20;
-    while(i < 20) do
+    alias freePageNumber R8;
+    alias blockNumber R9;
+    alias ptbr R10;
+    ptbr = PAGE_TABLE_BASE + swapPID*20;
+    cnt = 2;
 
-        alias block_number R8;
-        block_number = [DISK_MAP_TABLE + pid*10 + i/2];
+    // Load swapped pages back into memory
+    while( cnt < 10 ) do
+        if([DISK_MAP_TABLE + swapPID*10 + cnt] != -1) then
 
-        // Valid Disk Map Entry
-        if([DISK_MAP_TABLE + pid*10 + i/2] != -1) then
-            // calling get_free_page() in Memeory Manager 
-            // args: funNum
-            multipush(R4,R7,R8);
-                R1 = GET_FREE_PAGE;
-                call MOD_2;
-            multipop(R4,R7,R8);
-            // R0 has free page
-            alias free_page_number R9;
-            free_page_number = R0;
+            // 	Call the get_free_page() to allocate a memory page
+            R1 = GET_FREE_PAGE;
+            multipush(R5, R6, R7, R8, R9, R10);
+            call MEMORY_MANAGER;
+            multipop(R5, R6, R7, R8, R9, R10);
+            freePageNumber = R0;
 
-            // Calling Disk Load Function
-            // Args: Page Number and Block Number
-            // multipush(R4,R7,R8);
-                backup;
-                R1 = DISK_LOAD;
-                R2 = PID; 
-                R3 = free_page_number;
-                R4 = block_number;
-                restore;
-            // multipop(R4,R7,R8);
+            // 	Get the disk block number corresponding to the heap/stack page (Disk Map Table entry)
+            blockNumber = [DISK_MAP_TABLE + swapPID*10 + cnt];
 
-            // Free the SWAP_BLOCK  
-            // Calling Release Block
-            multipush(R4,R7,R8);
-                R1 = RELEASE_BLOCK;
-                R2 = block_number; 
-            multipop(R4,R7,R8);
+            // 	Use the disk_load() to copy the heap/stack page found to the memory
+            R1 = DISK_LOAD;
+            R2 = [SYSTEM_STATUS_TABLE+1];
+            R3 = freePageNumber;
+            R4 = blockNumber;
+            multipush(R5, R6, R7, R8, R9, R10);
+            call DEVICE_MANAGER;
+            multipop(R5, R6, R7, R8, R9, R10);
 
-            [pageTableEntry + i] = free_page_number;
-            [pageTableEntry + i + 1] = "0110";
+            // Free the swap block by calling the release_block() function
+            R1 = RELEASE_BLOCK;
+            R2 = blockNumber;
+            R3 = [SYSTEM_STATUS_TABLE+1];
+            multipush(R5, R6, R7, R8, R9, R10);
+            call MEMORY_MANAGER;
+            multipop(R5, R6, R7, R8, R9, R10);
 
-            // Invalidate the DISK MAP ENTRY 
-            [DISK_MAP_TABLE + pid*10 + i/2] = -1;
+            // 	Set the Page table entry correpsonding to the page
+            // Reference bit is set to 0, valid bit and write bit are set to 1
+            [ptbr + cnt*2] = freePageNumber;
+            [ptbr + cnt*2 + 1] = "0110";
 
+            // Invalidate the Disk Map Table entry corresponding to the heap page
+            [DISK_MAP_TABLE + swapPID*10 + cnt] = -1;
         endif;
-        if( i == 6 ) then
-            i = 14;
-        endif;
-        i = i + 2;
-    endwhile;
 
-    // Set SWAP FLAG to 0
-    [PROCESS_TABLE + pid*16 + 6] = 0;
+        if( cnt == 3 ) then
+            cnt = 8;
+        else
+            cnt = cnt + 1;
+        endif ;
+    endwhile ;
 
-    // Incr. SWAP_COUNT in SYSTEM_STATUS_TABLE
+    // Set the SWAP_FLAG field in the process table entry of the process to 0.
+    [PROCESS_TABLE + swapPID*16 + 6 ] = 0;
+
+    // In the System Status Table, decrement the SWAP_COUNT and reset the PAGING_STATUS back to 0
     [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] - 1;
-
-    // RESET PAGING STATUS
     [SYSTEM_STATUS_TABLE + 5] = 0;
-    print("SwapInEnd");
 
     return;
-
 endif;

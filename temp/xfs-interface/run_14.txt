@@ -1,0 +1,10 @@
+load --init ../expl/expl_progs14/odd_nos.xsm
+load --os ../spl/spl_progs/os_startup_14.xsm
+load --module 7 ../spl/spl_progs/module7_14.xsm
+load --module 5 ../spl/spl_progs/mod5_Scheduler.xsm
+load --int=10 ../spl/spl_progs/int10.xsm
+load --exhandler ../spl/spl_progs/haltprog.xsm
+load --library ../expl/library.lib
+load --int=timer ../spl/spl_progs/timers14.xsm
+load --int=7 ../spl/spl_progs/sample_int7.xsm
+load --idle ../expl/expl_progs/idleprog.xsm
