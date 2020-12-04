@@ -9,7 +9,6 @@ load --module 3 ../spl/spl_progs20/mod3_FileManager_25.xsm
 load --module 2 ../spl/spl_progs20/mod2_Memory_27.xsm
 load --module 1 ../spl/spl_progs20/mod1_Process_25.xsm
 load --module 0 ../spl/spl_progs20/mod0_Resource_24.xsm
-load --int=10 ../spl/spl_progs20/int10_s20.xsm
 load --exhandler ../spl/spl_progs20/exception_handler.xsm
 load --library ../expl/library.lib
 load --int=timer ../spl/spl_progs20/timer_int_27.xsm
@@ -20,6 +19,7 @@ load --int=14 ../spl/spl_progs20/int14_s22.xsm
 load --int=13 ../spl/spl_progs20/int13_s22.xsm
 load --int=12 ../spl/spl_progs20/int12_Logout.xsm
 load --int=11 ../spl/spl_progs20/int11_s21.xsm
+load --int=10 ../spl/spl_progs20/int10_s20.xsm
 load --int=9 ../spl/spl_progs20/int9_Exec_19.xsm
 load --int=8 ../spl/spl_progs20/int8_Fork_24.xsm
 load --int=7 ../spl/spl_progs20/int7_write_25.xsm

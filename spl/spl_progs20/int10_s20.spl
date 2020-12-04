@@ -15,4 +15,4 @@ call MOD_1;
 multipop(R1, R2, R3);
 
 // No return, just call Scheduler
-call MOD_5;
+call SCHEDULER;

@@ -9,7 +9,7 @@ if(functionNum==1) then
 		print "out of free space";
 		[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+4]=WAIT_MEM;
 		//print [SYSTEM_STATUS_TABLE+1];
-		call MOD_5;
+		call SCHEDULER;
 		//print [SYSTEM_STATUS_TABLE+1];
 	endwhile;
 	[SYSTEM_STATUS_TABLE+3]=[SYSTEM_STATUS_TABLE+3]-1;

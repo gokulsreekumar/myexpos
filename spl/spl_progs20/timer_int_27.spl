@@ -1,208 +1,5 @@
-// //-------------------------------- TIMER INTERRUPT ------------------------------------------------------------------ //
-// // SWITCH STACKS: USER TO KERNEL and Backup (Hardware Interrupt)
-// [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
-// SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
-// // BACKUP the regs of curr. running process
-// backup;
 
-// // Get Process Table for curr. process
-// alias currentPID R0;
-// currentPID = [ SYSTEM_STATUS_TABLE + 1 ];
-// alias process_table_entry R1;
-// process_table_entry = PROCESS_TABLE + currentPID * 16;
-
-// alias cnt R2;
-
-// // ---------------------- SWAPPING MANAGEMENT -----------------------------------------------------------------------------------
-// // SWAP_OUT = 1, SWAP_IN = 2, No Swapping = 0
-// // If swapping is Initiated, Check PAGING STATUS in SYSTEM_STATUS_TABLE
-// if( [ SYSTEM_STATUS_TABLE + 5] != 0 ) then
-//     // If Current Process is SWAPPING DAEMON, do Swap in/out
-//     if( currentPID == 15 ) then
-//         if([ SYSTEM_STATUS_TABLE + 5] == SWAP_OUT) then
-//             // Calling SWAP_OUT
-//             multipush(R0,R1,R2);
-//                 R1 = SWAP_OUT;
-//                 R2 = [SYSTEM_STATUS_TABLE + 1];
-//                 call MOD_6;
-//             multipop(R0,R1,R2);
-//         else 
-//             if([ SYSTEM_STATUS_TABLE + 5] == SWAP_IN) then
-//                 // Calling SWAP_IN
-//                 multipush(R0,R1,R2);
-//                     R1 = SWAP_IN;
-//                     R2 = [SYSTEM_STATUS_TABLE + 1];
-//                     call MOD_6;
-//                 multipop(R0,R1,R2);
-//             endif;
-//         endif;
-//     else 
-//         // If Current Process is IDLE
-//         if(currentPID == 0) then
-//             //* Swapping is ongoing, but the daemon is blocked for some disk operation and idle is being run now *//
-//             //* Skip to the end to perform context switch. *//
-//             goto CONTEXT_SWITCH;
-//         endif;
-//     endif;
-// else
-//     // If Swapping is NOT Initiated:
-//     // Check if it needs to be Initiated
-//     // 2 conds: MEM_LOW or MAX_TICK
-
-//     // * Checking MEM_FREE_COUNT in SYSTEM_STATUS_TABLE * //
-//     if([SYSTEM_STATUS_TABLE + 2] < MEM_LOW) then
-//         //* Swap Out to be invoked during next Timer Interrupt *//
-//         print("MemLow");
-//         [SYSTEM_STATUS_TABLE + 5] = SWAP_OUT;
-//     else
-//         // If there are Swapped Out Processes
-//         // * Check SWAPPED_COUNT in SYSTEM_STATUS_TABLE * //
-//         if( [SYSTEM_STATUS_TABLE + 4] != 0 ) then
-//             // If Tick of any Swapped Out process > MAX_TICK
-//             cnt = 0;
-//             while (cnt < MAX_PROC_NUM) do
-//                 alias processEntry R5;
-//                 processEntry = PROCESS_TABLE + cnt*16;
-//                 if([processEntry + 4] != TERMINATED && [processEntry + 6] == 1 && [processEntry] > MAX_TICK) then
-//                     break;
-//                 endif;
-//                 cnt = cnt + 1;
-//             endwhile;
-//             // OR If MEM_FREE_COUNT > MEM_HIGH
-//             // * checking only till 15 as Swapper Daemon is PID = 15 (NOT Swapped Out, along with IDLE(0), LOGIN(1), SHELL(2)) *//
-//             if( cnt < 15 || [SYSTEM_STATUS_TABLE + 2] > MEM_HIGH ) then
-//                 //* Swap In to be invoked during next Timer Interrupt *//
-//                 [SYSTEM_STATUS_TABLE + 5] = SWAP_IN;
-//             endif;
-//         endif;
-//     endif;
-
-// endif;
-
-// // ---- Change state of the current process in its Process Table entry from RUNNING to READY. -------------
-// [process_table_entry + 4] = READY;
-
-
-// // ----- Increment TICKS of All Processes -----------------------------------------------------
-// cnt = 0;
-// // >>>>>>>>>>> DOUBT: Do we need to check Valid Process <<<<<<<<<<<<<<< //
-// while(cnt < MAX_PROC_NUM) do
-//     [PROCESS_TABLE + cnt*16 + 0] = [PROCESS_TABLE + cnt*16 + 0] + 1;
-//     cnt = cnt + 1;
-// endwhile;
-
-// //------ Invoke SCHEDULER -----------------------------------------------------------------------
-// CONTEXT_SWITCH:
-// call SCHEDULER;
-
-// // print("Return Timer");
-// // print("PID:");print([SYSTEM_STATUS_TABLE +1]);
-// // RESTORE the Regs of SOME OTHER PROCESS DETERMINED BY SCHEDULER
-// restore;
-
-// // Also SET the curr value of SP, userSP ( of new Process identified by SCHEDULER)
-// SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
-
-// // print(SP);
-
-// // Set the MODE_FLAG and Return
-// [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
-
-// ireturn;
-
-// // TIMER
-
-// //store user SP
-// [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP;
-
-// // Setting SP to UArea Page number * 512 - 1
-// SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11] * 512 - 1;
-
-// backup;
-// //print "mem free cnt"; print [SYSTEM_STATUS_TABLE + 2];
-// // --- PAGING SET UPS
-
-// // If swapping is initiated (check System Status Table - PAGING_STATUS field) 
-// if( [SYSTEM_STATUS_TABLE + 5]!= 0 ) then
-//     // Call Swap In/Out, if necessary
-
-//     // if the current process is the Swapper Daemon and Paging Status is SWAP_OUT,
-//     if([SYSTEM_STATUS_TABLE+1] == SWAPPER_DAEMON &&  [SYSTEM_STATUS_TABLE + 5] == SWAP_OUT ) then
-//         R1 = SWAP_OUT;
-//         R2 = [SYSTEM_STATUS_TABLE+1];
-//         call PAGER_MODULE;        
-//     endif;
-
-//     // else if the current process is the Swapper Daemon and Paging Status is SWAP_IN, 
-//     if( [SYSTEM_STATUS_TABLE+1] == SWAPPER_DAEMON && [SYSTEM_STATUS_TABLE + 5] == SWAP_IN) then
-//         R1 = SWAP_IN;
-//         R2 = [SYSTEM_STATUS_TABLE+1];
-//         call PAGER_MODULE;
-//     endif ;
-
-//     // else if the current process is Idle
-//     if( [SYSTEM_STATUS_TABLE+1] == IDLE_PROCESS) then
-//         // Swapping is ongoing, but the daemon is blocked for some disk operation and idle is being run now 
-//         // Skip to the end to perform context switch
-//         goto end;
-//     endif;
-
-// else
-
-//     // Swapping is not on now.  Check whether it must be initiated 
-
-//     if( [SYSTEM_STATUS_TABLE + 2] < MEM_LOW ) then
-//         // Swap Out to be invoked during next Timer Interrupt
-
-//         // Set the Paging Status in System Status Table to SWAP_OUT
-//         [SYSTEM_STATUS_TABLE + 5] = SWAP_OUT;
-
-//     else
-//         // else if there are swapped out processes (Check SWAPPED_COUNT in System Status Table)
-//         if([SYSTEM_STATUS_TABLE + 4] > 0) then
-//             if([SYSTEM_STATUS_TABLE + 2] > MEM_HIGH) then
-//                 goto startSwapIn;
-//             endif;
-//             alias cnt R1;
-//             cnt = 0;
-//             while( cnt < 16 ) do
-//                 if([PROCESS_TABLE + cnt*16 + 4 + 6]==1 && [PROCESS_TABLE + cnt*16 ] > MAX_TICK) then
-//                     goto startSwapIn;
-//                 endif;
-//                 cnt = cnt + 1;
-//             endwhile ;
-
-//             // no need of swap in , continue normal timer interrupt routine
-//             goto end;
-
-//             startSwapIn :
-//             //reached here means Swap In to be invoked during next Timer Interrupt
-
-//             // Set the Paging Status in System Status Table to SWAP_IN
-//             [SYSTEM_STATUS_TABLE + 5] = SWAP_IN;
-//         endif;
-        
-//     endif ;
-    
-// endif;
-
-
-// end :
-
-// //Set state of process as READY.
-// [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 4] = READY;
-
-// call SCHEDULER;
-
-// restore;
-
-// SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
-
-// [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
-// ireturn;
-
-
-// TIMER
+// -------------------------------- TIMER INTERRUPT ------------------------------------------------------------------ //
 
 //store user SP
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13] = SP;
@@ -211,8 +8,9 @@
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 11] * 512 - 1;
 
 backup;
-//print "mem free cnt"; print [SYSTEM_STATUS_TABLE + 2];
-// --- PAGING SET UPS
+
+
+// ---------------------- SWAPPING MANAGEMENT -------------------------------------------------------------------------
 
 // If swapping is initiated (check System Status Table - PAGING_STATUS field) 
 if( [SYSTEM_STATUS_TABLE + 5]!= 0 ) then
@@ -259,6 +57,7 @@ else
             cnt = 0;
             while( cnt < 16 ) do
                 if([PROCESS_TABLE + cnt*16 + 4 + 6]==1 && [PROCESS_TABLE + cnt*16 ] > MAX_TICK) then
+                    // SWAP_FLAG in Process Table checked, also max Max_Tick(1000)
                     goto startSwapIn;
                 endif;
                 cnt = cnt + 1;
@@ -284,12 +83,15 @@ end :
 //Set state of process as READY.
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 4] = READY;
 
+// Switch Context
 call SCHEDULER;
 
+
+// Restore the Context of Some Process dteremined by Scheduler
 restore;
 
+// Return 
 SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
-
 [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
 ireturn;
 

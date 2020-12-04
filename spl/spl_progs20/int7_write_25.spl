@@ -72,6 +72,7 @@ else
     alias inodeEntry R11;
     inodeEntry = INODE_TABLE +16*inodeIndex;
 
+    // Permissions
     if([inodeEntry + 4] == EXCLUSIVE) then
         if( [processEntry + 3] != 1 && [processEntry + 3] != [inodeEntry + 3]) then
             // user has no permission to write file, return -1
@@ -81,7 +82,7 @@ else
         endif ;
     endif;
     
-    // lock file
+    // --------------- lock file ----------------
     // CALL ACQUIRE_INODE, RESOURCE MANAGER 0
     R1 = ACQUIRE_INODE;
     R2 = inodeIndex;
@@ -96,6 +97,7 @@ else
         goto end;
     endif;
 
+    // -------- LSEEK MANIPULATION --------------------------
     alias lseek R12;
     lseek = [openFileTableEntry + 2];
 

@@ -1,7 +1,7 @@
 // ---- FILE SYSCALLS: ---------- 
-// Open = 2
+// Open  = 2
 // Close = 3
-// Seel = 6
+// Seek  = 6
 
 //---- Extract Syscall Number from User stack (at userSP - 5)------------
 alias SysCallNum R1;

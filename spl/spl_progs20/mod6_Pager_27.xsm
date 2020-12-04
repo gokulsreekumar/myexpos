@@ -187,6 +187,7 @@ JZ R16, _L27
 JMP swap_free
 JMP _L28
 _L27:
+JMP end
 _L28:
 JMP _L26
 _L25:

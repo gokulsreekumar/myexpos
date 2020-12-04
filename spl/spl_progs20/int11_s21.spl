@@ -58,7 +58,7 @@ if(SysCallNum == 13) then
     
     //---- Scheduler ------------------------
     multipush(R1,R2,R3,R4);
-    call MOD_5;
+    call SCHEDULER;
     multipop(R1,R2,R3,R4);
 
     //---- Executed only after READY state is achieved --------------

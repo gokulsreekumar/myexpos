@@ -5,7 +5,7 @@ alias newPID R0;
 newPID = 1;
 while(newPID != 16) do
     if([PROCESS_TABLE + (newPID)*16 + 4] != TERMINATED) then
-        call MOD_5;
+        call SCHEDULER;
     endif;
     newPID = newPID + 1;
 endwhile;

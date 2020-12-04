@@ -13,7 +13,7 @@ process_table_entry = PROCESS_TABLE + currentPID * 16;
 [process_table_entry + 4] = READY;
 
 // invoke SCHEDULER
-call MOD_5;
+call SCHEDULER;
 
 // RESTORE the Regs of SOME OTHER PROCESS DETERMINED BY SCHEDULER
 // and also the curr value of SP (SET by SCHEDULER)
