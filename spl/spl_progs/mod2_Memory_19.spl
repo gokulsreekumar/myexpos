@@ -83,7 +83,7 @@ if(functionNum == 5) then
     // Mem Page Not Found, Call Get Free Page (FunNum=1, Mem Manager)
     multipush(R1,R2,R5,R6,R7);
 	R1 = 1;
-	call MOD_2;
+	call MEMORY_MANAGER;
 	multipop(R1,R2,R5,R6,R7);
     // Call Disk Load, Args: FunNum, PID, Page Number, Block Number
 	multipush(R0,R1,R2,R5,R6,R7);
@@ -91,7 +91,7 @@ if(functionNum == 5) then
 	R3 = R0;
     R2 = [SYSTEM_STATUS_TABLE + 1];
     R1 = 2;
-	call MOD_4;
+	call DEVICE_MANAGER;
 	multipop(R0,R1,R2,R5,R6,R7);
     breakpoint;
     return;

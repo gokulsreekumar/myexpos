@@ -16,7 +16,7 @@ SP = [processEntryP + 11]*512 - 1;
 //GET_PCB_ENTRY, PROCESS MANAGER
 multipush(R5, R14);
 R1 = 1;
-call MOD_1;
+call PROCESS_MANAGER;
 multipop(R5, R14);
 
 //save PID of child
@@ -47,14 +47,14 @@ if( [pPTBR + 4] == -1 || [pPTBR+5] == "0000") then
     // GET_FREE_PAGE, MEMORY MANAGER
     multipush(R5, R6, R7, R8, R14);
     R1=1;
-    call MOD_2;
+    call MEMORY_MANAGER;
     multipop(R5, R6, R7, R8, R14);
     [ pPTBR + 4]=R0;
     [ pPTBR + 5]="0110";
 
     multipush(R5, R6, R7, R8, R14);
     R1=1;
-    call MOD_2;
+    call MEMORY_MANAGER;
     multipop(R5, R6, R7, R8, R14);
     [ pPTBR + 6]=R0;
     [ pPTBR + 7]="0110";
@@ -64,21 +64,21 @@ endif ;
 //GET_FREE_PAGE, MEMORY MANAGER
 multipush(R5, R6, R7, R8, R14);
 R1=1;
-call MOD_2;
+call MEMORY_MANAGER;
 multipop(R5, R6, R7, R8, R14);
 [chPTBR + 16] = R0;
 [chPTBR + 17] = [pPTBR + 17];
 
 multipush(R5, R6, R7, R8, R14);
 R1=1;
-call MOD_2;
+call MEMORY_MANAGER;
 multipop(R5, R6, R7, R8, R14);
 [chPTBR + 18] = R0;
 [chPTBR + 19] = [pPTBR + 19];
 
 multipush(R5, R6, R7, R8, R14);
 R1=1;
-call MOD_2;
+call MEMORY_MANAGER;
 multipop(R5, R6, R7, R8, R14);
 [PROCESS_TABLE + chPID*16 + 11] = R0;
 

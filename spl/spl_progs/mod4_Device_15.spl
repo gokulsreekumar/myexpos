@@ -9,7 +9,7 @@ if(functionNum == 3) then
     R1 = 8;
     R2 = currentPID;
     // Call Resource Manager
-    call MOD_0;
+    call RESOURCE_MANAGER;
     multipop(R1, R2, R3);
     // Print the word in R3
     print(R3);
@@ -19,7 +19,7 @@ if(functionNum == 3) then
     R1 = 9;
 	R2 = currentPID;
     // Call Resource Manager 
-	call MOD_0;
+	call RESOURCE_MANAGER;
 	multipop(R1, R2, R3);
 	return;
 else

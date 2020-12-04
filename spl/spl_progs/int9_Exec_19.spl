@@ -34,7 +34,7 @@ multipush(R0,R1,R2);
 // ARGS: funNum and PID
 R1 = 3;
 R2 = [SYSTEM_STATUS_TABLE + 1];
-call MOD_1;
+call PROCESS_MANAGER;
 multipop(R0,R1,R2);
 // ----- Re-Aquire UArea Page ------------------------------------
 alias UAreaPage R3;
@@ -71,10 +71,10 @@ PTBR = PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20;
 // ------- Stack, calling Get Free Page function (funNum = 1) ----------
 multipush(R0,R1,R2,R3);
 R1 = 1;
-call MOD_2;
+call MEMORY_MANAGER;
 [PTBR + 16] = R0;
 [PTBR + 17] = "0110";
-call MOD_2;
+call MEMORY_MANAGER;
 [PTBR + 18] = R0;
 [PTBR + 19] = "0110";
 multipop(R0,R1,R2,R3);
@@ -104,7 +104,7 @@ multipop(R0,R1,R2,R3);
 multipush(R0,R1,R2,R3);
 R1 = 5;
 R2 = [INODE_TABLE + i*16 + 8];
-call MOD_2;
+call MEMORY_MANAGER;
 // Assign the New Page Number in Page Table
 [PTBR+8] = R0;
 [PTBR+9] = "0100";

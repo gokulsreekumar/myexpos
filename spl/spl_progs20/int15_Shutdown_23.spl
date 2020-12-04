@@ -38,14 +38,14 @@ multipush(R1, R2);
     R2 = [SYSTEM_STATUS_TABLE + 1];
     R3 = 59;
     R4 = 3;
-    call MOD_4;
+    call DEVICE_MANAGER;
 multipop(R1, R2);
 multipush(R1, R2);
     R1 = 1;
     R2 = [SYSTEM_STATUS_TABLE + 1];
     R3 = 60;
     R4 = 4;
-    call MOD_4;
+    call DEVICE_MANAGER;
 multipop(R1, R2);
 
 // Disk Free List
@@ -54,7 +54,7 @@ multipush(R1, R2);
     R2 = [SYSTEM_STATUS_TABLE + 1];
     R3 = 61;
     R4 = 2;
-    call MOD_4;
+    call DEVICE_MANAGER;
 multipop(R1, R2);
 
 // Root File
@@ -63,7 +63,7 @@ multipush(R1, R2);
     R2 = [SYSTEM_STATUS_TABLE + 1];
     R3 = 62;
     R4 = 5;
-    call MOD_4;
+    call DEVICE_MANAGER;
 multipop(R1, R2);
 
 halt;
