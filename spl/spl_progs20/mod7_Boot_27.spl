@@ -323,12 +323,13 @@ while( counter < 32) do
     counter = counter + 1;
 endwhile;
 
-// ---- MEMORY_FREE_LIST, initial free pool starts from 80, occupied: INIT/LOGIN, SHELL and IDLE --------
+// ---- MEMORY_FREE_LIST, initial free pool starts from 82, occupied: INIT/LOGIN, SHELL and IDLE --------
 // Pages 71 - 74 : used for Buffer Cache
 // Page 75 : reserved
 // Till 70 and from 76 - 80 Used
+// 81 and 82 for Swapper Daemon
 counter = 0;
-while(counter <= 80) do
+while(counter <= 82) do
 	[MEMORY_FREE_LIST + counter] = 1;
 	counter = counter + 1;
 endwhile;
@@ -340,9 +341,10 @@ endwhile;
 // -- SYSTEM_STATUS_TABLE Initialization -----------------------------
 // wait_mem_cnt = 0, mem_free_count = initial free pool (127-82=45)
 // SWAPPED_COUNT field to 0 and PAGING_STATUS field to 0
-[SYSTEM_STATUS_TABLE + 2] = 45;
+[SYSTEM_STATUS_TABLE + 2] = 45; // mem_free_count
 [SYSTEM_STATUS_TABLE + 3] = 0;
 [SYSTEM_STATUS_TABLE + 4] = 0;
 [SYSTEM_STATUS_TABLE + 5] = 0;
+
 
 return;

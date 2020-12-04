@@ -17,7 +17,7 @@ if(functionNum == 1) then
 
         // Scheduler
 		multipush(R1,R2,R3);
-		call MOD_5;
+		call SCHEDULER;
 		multipop(R1,R2,R3);
 	endwhile;
     // Set Locking PID
@@ -59,7 +59,7 @@ if( functionNum == 3) then
         [PROCESS_TABLE + currentPID*16 + 4] = WAIT_DISK;
         multipush(R1, R2);
         // Scheduler 
-		call MOD_5;
+		call SCHEDULER;
 		multipop(R1, R2);
     endwhile;
     // Update Disk Status Table
@@ -80,7 +80,7 @@ if ( functionNum == 4 ) then
         [PROCESS_TABLE + PID*16 + 5] = inodeindex;
         multipush(R1, R2, R3);
         // Scheduler 
-		call MOD_5;
+		call SCHEDULER;
 		multipop(R1, R2, R3);
     endwhile;
 
@@ -184,7 +184,7 @@ if( functionNum == 8 ) then
         [PROCESS_TABLE + currentPID*16 + 4] = WAIT_TERMINAL;
         multipush(R1, R2);
         // Scheduler
-		call MOD_5;
+		call SCHEDULER;
 		multipop(R1, R2);
     endwhile;
     // Update Terminal Status Table

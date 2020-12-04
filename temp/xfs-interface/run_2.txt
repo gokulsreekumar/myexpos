@@ -1,0 +1,7 @@
+load --init ../expl/samples/numbers.xsm
+load --os ../spl/spl_progs/os_startup.xsm
+load --int=10 ../spl/spl_progs/haltprog.xsm
+load --exhandler ../spl/spl_progs/haltprog.xsm
+load --library ../expl/expl_progs/library_1.lib
+load --int=timer ../spl/spl_progs/sample_timer.xsm
+load --int=7 ../spl/spl_progs/sample_int7.xsm

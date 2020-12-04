@@ -1,22 +1,23 @@
-// ---- OS STARTUP CODE --------------------------------------------------- //
+// ---- OS STARTUP CODE --------------------------------------------------------------------------------------- //
 
 // MOD 7 : BOOT MODULE
 loadi(54,67);
 loadi(55,68);
 
-// IDLE PROCESS 
+// IDLE PROG
 loadi(69,11);
 
 // stack setup for calling
-SP = 82 * 512 - 1;
+//(user area page number) * 512 -1 
+SP = 76 * 512 - 1;
 
-// calling bootmodule
 call BOOT_MODULE;
 
-// Page Table for IDLE
+// ---- IDLE PROCESS ------------------------------------------------------------------
 
-// PID = 0
-PTBR = PAGE_TABLE_BASE;
+// PID is 0
+
+PTBR = PAGE_TABLE_BASE;  
 PTLR = 10;
 
 //Library
@@ -42,55 +43,66 @@ PTLR = 10;
 [PTBR+15] = "0000";
 
 //Stack
-[PTBR+16] = 70;
+[PTBR+16] = 70; //81
 [PTBR+17] = "0110";
 [PTBR+18] = -1;
 [PTBR+19] = "0000";
 
 
 //------ Process Table IDLE ---------------------------------------
-    // TICK
-    [PROCESS_TABLE + 0] = 0;
-    // PID
-    [PROCESS_TABLE + 1] = 0;
-    // USER_ID (KERNEL)
-    [PROCESS_TABLE + 3] = 0;
-    // STATE Field
-    [PROCESS_TABLE + 4] = RUNNING;
-    // UArea Page
-    [PROCESS_TABLE + 11] = 76;
-    // UPTR (Logical Address for Top of User Stack)
-    [PROCESS_TABLE + 13] = 8 * 512;
-    // KPTR 
-    [PROCESS_TABLE + 12] = 0;
-    // PTBR_field
-    [PROCESS_TABLE + 14] = PAGE_TABLE_BASE;
-    // PTLR_field
-    [PROCESS_TABLE + 15] = 10;
 
-//------ IDLE ENRTY POINT -----------------------------------------
+// tick
+[PROCESS_TABLE ] = 0;
+
+// process id
+[PROCESS_TABLE + 1] = 0;
+
+// user id
+[PROCESS_TABLE + 1] = 0;
+
+// status
+[PROCESS_TABLE + 4] = RUNNING;
+
+// user area page
+[PROCESS_TABLE + 11] = 76;
+
+// UPTR
+[PROCESS_TABLE + 13] = 4096;
+
+// KPTR
+[PROCESS_TABLE + 12] = 0;
+
+// PTBR, PTLR
+[PROCESS_TABLE + 14] = PAGE_TABLE_BASE;
+[PROCESS_TABLE + 15] = 10;
+
+[SYSTEM_STATUS_TABLE + 1] = 0;
+
+// set entry point in user stack
 [70 * 512] = [69*512 + 1];
 
 
-// Page Table for IDLE
 
-// PID = 0
+//---- SWAPPER DAEMON ------------------------------------------------------------------
+
+// PID is 15 for Swapper Daemon
+
 PTBR = PAGE_TABLE_BASE + 20*15;
 PTLR = 10;
 
-//Library
+// Library
 [PTBR+0] = -1;
 [PTBR+1] = "0000";
 [PTBR+2] = -1;
 [PTBR+3] = "0000";
 
-//Heap
+// Heap
 [PTBR+4] = -1;
 [PTBR+5] = "0000";
 [PTBR+6] = -1;
 [PTBR+7] = "0000";
 
-//Code
+// Code
 [PTBR+8] = 69;
 [PTBR+9] = "0100";
 [PTBR+10] = -1;
@@ -100,42 +112,49 @@ PTLR = 10;
 [PTBR+14] = -1;
 [PTBR+15] = "0000";
 
-//Stack
+// Stack
 [PTBR+16] = 81;
 [PTBR+17] = "0110";
 [PTBR+18] = -1;
 [PTBR+19] = "0000";
 
 
-//------ Process Table IDLE ---------------------------------------
-    // TICK
-    [PROCESS_TABLE + 0] = 0;
-    // PID
-    [PROCESS_TABLE + 1] = 15;
-    // USER_ID (KERNEL)
-    [PROCESS_TABLE + 3] = 0;
-    // STATE Field
-    [PROCESS_TABLE + 4] = CREATED;
-    // UArea Page
-    [PROCESS_TABLE + 11] = 82;
-    // UPTR (Logical Address for Top of User Stack)
-    [PROCESS_TABLE + 13] = 8 * 512;
-    // KPTR 
-    [PROCESS_TABLE + 12] = 0;
-    // PTBR_field
-    [PROCESS_TABLE + 14] = PTBR;
-    // PTLR_field
-    [PROCESS_TABLE + 15] = 10;
+//------ Process Table SWAPPER DAEMON ---------------------------------------
 
-//------ IDLE ENRTY POINT -----------------------------------------
-[81 * 512] = [69*512 + 1];
+alias processTableSwapper R1;
+processTableSwapper = PROCESS_TABLE + 16*15;
+// tick
+[processTableSwapper ] = 0;
 
-// System Status Table
-// STORE PID of IDLE = 0
-[SYSTEM_STATUS_TABLE + 1] = 0;
+// process id
+[processTableSwapper + 1] = 15;
 
+// user id
+[processTableSwapper + 1] = 0;
+
+// status
+[processTableSwapper + 4] = CREATED;
+
+// user area page
+[processTableSwapper + 11] = 82;
+
+// UPTR
+[processTableSwapper + 13] = 4096;
+
+// KPTR
+[processTableSwapper + 12] = 0;
+
+// PTBR, PTLR
+[processTableSwapper + 14] = PAGE_TABLE_BASE + 20*15;
+[processTableSwapper + 15] = 10;
+
+// set entry point in user stack
+[81*512] = [69*512 +1];
+
+// set to idle process
 SP = [PROCESS_TABLE + 13];
 PTBR = [PROCESS_TABLE + 14];
 PTLR = [PROCESS_TABLE + 15];
 
 ireturn;
+

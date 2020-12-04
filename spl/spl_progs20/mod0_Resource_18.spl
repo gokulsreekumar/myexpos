@@ -8,7 +8,7 @@ if( functionNum == 3) then
         [PROCESS_TABLE + currentPID*16 + 4] = WAIT_DISK;
         multipush(R1, R2);
         // Scheduler 
-		call MOD_5;
+		call SCHEDULER;
 		multipop(R1, R2);
     endwhile;
     // Update Disk Status Table
@@ -24,7 +24,7 @@ if( functionNum == 8 ) then
         [PROCESS_TABLE + currentPID*16 + 4] = WAIT_TERMINAL;
         multipush(R1, R2);
         // Scheduler
-		call MOD_5;
+		call SCHEDULER;
 		multipop(R1, R2);
     endwhile;
     // Update Terminal Status Table

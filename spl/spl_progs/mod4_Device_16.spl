@@ -8,7 +8,7 @@ if(functionNum == 3) then
     R1 = 8;
     R2 = currentPID;
     // Call Resource Manager
-    call MOD_0;
+    call RESOURCE_MANAGER;
     multipop(R1, R2, R3);
 
 
@@ -20,7 +20,7 @@ if(functionNum == 3) then
     R1 = 9;
 	R2 = currentPID;
     // Call Resource Manager 
-	call MOD_0;
+	call RESOURCE_MANAGER;
 	multipop(R1, R2, R3);
 	return;
 endif;
@@ -32,7 +32,7 @@ if(functionNum == 4) then
     R1 = 8;
     R2 = currentPID;
     // Call Resource Manager
-    call MOD_0;
+    call RESOURCE_MANAGER;
 
 	multipop(R1, R2, R3);
 // Read statement
@@ -42,7 +42,7 @@ if(functionNum == 4) then
 
 // MOD_5 for Context Switch (Scheduler)
     multipush(R1, R2, R3);
-    call MOD_5;
+    call SCHEDULER;
     multipop(R1, R2, R3);
 
     // R3 has Logical address of the storage buffer, 

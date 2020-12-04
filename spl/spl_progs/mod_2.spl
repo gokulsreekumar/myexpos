@@ -9,7 +9,7 @@ if(functionNum==1) then
 		print "out of free space";
 		[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+4]=WAIT_MEM;
 		//print [SYSTEM_STATUS_TABLE+1];
-		call MOD_5;
+		call SCHEDULER;
 		//print [SYSTEM_STATUS_TABLE+1];
 	endwhile;
 	[SYSTEM_STATUS_TABLE+3]=[SYSTEM_STATUS_TABLE+3]-1;
@@ -85,7 +85,7 @@ if(functionNum==5) then
 	if(i==16) then
 		multipush(R1,R2,R3);
 		R1=1;
-		call MOD_2;
+		call MEMORY_MANAGER;
 		multipop(R1,R2,R3);
 		multipush(R0,R1,R2,R3);
 		R1=2;
@@ -93,7 +93,7 @@ if(functionNum==5) then
 		R2=[SYSTEM_STATUS_TABLE+1];
 		R3=R0;
 		//print "disk";
-		call MOD_4;
+		call DEVICE_MANAGER;
 		multipop(R0,R1,R2,R3);
 		return; //R0 is returned;
 	endif;

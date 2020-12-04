@@ -44,7 +44,7 @@ else
     R3 = word; 
 
     // Call Device Manager Module, to invoke Terminal Write Function
-    call MOD_4;
+    call DEVICE_MANAGER;
 
     // Pop back the Context of this Module, ignore R0 Return value
     multipop(R0, R1, R2, R3, R4, R5);

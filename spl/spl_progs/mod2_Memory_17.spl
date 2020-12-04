@@ -11,7 +11,7 @@ if(functionNum == 1) then
         [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 4] = WAIT_MEM;
         // calling Scheduler
 		multipush(R1,R2);
-		call MOD_5;
+		call SCHEDULER;
 		multipop(R1,R2);
     endwhile;
     // wait_mem_count and mem_free_count

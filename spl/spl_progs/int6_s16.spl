@@ -28,7 +28,7 @@ else
 	 R2 = [SYSTEM_STATUS_TABLE + 1];
 	 R3 = word;
 
-	 call MOD_4;
+	 call DEVICE_MANAGER;
 
 	 multipop(R0, R1, R2, R3);
 	 
