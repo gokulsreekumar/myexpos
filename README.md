@@ -1,18 +1,7 @@
-# myexpos
-Build Your Own Operating System  |  credits : EXPOS NITC
+# eXpOS
 
-Expermintal Operatign System
+eXpOS is an elementary operating system implemented from scratch on a virtual machine.
 
-XSM : VIRTUAL MACHINE
+A virtual machine, a virtual disk and also an interface to that disk is given. Compilers provided to write the operating system code are SPL and EXPL which are respectively for KERNEL and USER Programs
 
-XFS-INTERFACE : LOAD FILES TO DISK
-
-### COMPILERS
-
-SPL : FOR KERNEL CODE
-
-EXPL : FOR USER PROGRAMS
-
-### EXPOS : Operating System on XSM
-
-visit : https://exposnitc.github.io/index.html
+Refer for more details: https://exposnitc.github.io
